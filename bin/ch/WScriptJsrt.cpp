@@ -150,6 +150,59 @@ Error:
     return returnValue;
 }
 
+
+JsValueRef __stdcall WScriptJsrt::ReadScriptFileCallback(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
+{
+	HRESULT hr = E_FAIL;
+	JsValueRef returnValue = JS_INVALID_REFERENCE;
+	JsErrorCode errorCode = JsNoError;
+	LPCWSTR errorMessage = L"";
+
+	if (argumentCount < 2)
+	{
+		errorCode = JsErrorInvalidArgument;
+		errorMessage = L"Need more or fewer arguments for WScript.Read";
+	}
+	else
+	{
+		const wchar_t *fileContent;
+		const wchar_t *fileName;
+		size_t fileNameLength;
+
+		IfJsrtErrorSetGo(ChakraRTInterface::JsStringToPointer(arguments[1], &fileName, &fileNameLength));
+
+		if (errorCode == JsNoError)
+		{
+			hr = Helpers::LoadScriptFromFile(fileName, fileContent);
+			if (FAILED(hr))
+			{
+				fwprintf(stderr, L"Couldn't load file.\n");
+			}
+			else
+			{
+				IfJsrtError(ChakraRTInterface::JsPointerToString(fileContent, wcslen(fileContent), &returnValue));
+			}
+		}
+	}
+
+Error:
+	if (errorCode != JsNoError)
+	{
+		JsValueRef errorObject;
+		JsValueRef errorMessageString;
+
+		if (wcscmp(errorMessage, L"") == 0) {
+			errorMessage = ConvertErrorCodeToMessage(errorCode);
+		}
+
+		ChakraRTInterface::JsPointerToString(errorMessage, wcslen(errorMessage), &errorMessageString);
+		ChakraRTInterface::JsCreateError(errorMessageString, &errorObject);
+		ChakraRTInterface::JsSetException(errorObject);
+	}
+
+	return returnValue;
+}
+
 JsValueRef __stdcall WScriptJsrt::LoadScriptCallback(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
 {
     HRESULT hr = E_FAIL;
@@ -465,6 +518,20 @@ bool WScriptJsrt::Initialize()
     JsPropertyIdRef printName;
     IfJsrtErrorFail(ChakraRTInterface::JsGetPropertyIdFromName(L"print", &printName), false);
     IfJsrtErrorFail(ChakraRTInterface::JsSetProperty(global, printName, echo, true), false);
+
+	JsValueRef load;
+	const wchar_t* loadString = L"load";
+	JsPropertyIdRef loadPropertyId;
+	IfJsrtErrorFail(ChakraRTInterface::JsGetPropertyIdFromName(loadString, &loadPropertyId), false);
+	CreateNamedFunction(loadString, LoadScriptFileCallback, &load);
+	IfJsrtErrorFail(ChakraRTInterface::JsSetProperty(global, loadPropertyId, load, true), false);
+
+	JsValueRef readScriptFile;
+	const wchar_t* readScriptFileString = L"read";
+	JsPropertyIdRef readScriptFilePropertyId;
+	IfJsrtErrorFail(ChakraRTInterface::JsGetPropertyIdFromName(readScriptFileString, &readScriptFilePropertyId), false);
+	CreateNamedFunction(readScriptFileString, ReadScriptFileCallback, &readScriptFile);
+	IfJsrtErrorFail(ChakraRTInterface::JsSetProperty(global, readScriptFilePropertyId, readScriptFile, true), false);
 
     return true;
 }
