@@ -4,6 +4,23 @@
 //-------------------------------------------------------------------------------------------------------
 #include "BackEnd.h"
 
+const unsigned char Security::CFopcodes[] = {
+	0x41,
+	0xc3,  // [ret] Return
+	0xcb,  // [Far return] Far return
+	0xcc,  // [int3] Interrupt Type 3
+	0xcf,  // [iret] Interrupt Return
+	0xc9,  // [leave]
+		   // Types of conditional jmp
+	0x73, 0x77, 0x72, 0x76, 0xe3, 0x74, 0x7f,
+	0x7d, 0x7c, 0x7e, 0x71, 0x7b, 0x70, 0x7a,
+	0x75, 0x79, 0x0f, 0x82, 0x84, 0x8f, 0x8d,
+	0x8c, 0x83, 0x8e, 0x87, 0x80, 0x81, 0x85,
+	0x88,
+	// Type of un-conditional jmp
+	0xeb, 0xe9, 0xff, 0xea
+};
+
 void
 Security::EncodeLargeConstants()
 {
@@ -286,7 +303,7 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
         }
 
 #ifdef _M_X64
-        addrOpnd->SetEncodedValue((Js::Var)this->EncodeAddress(instr, addrOpnd, (size_t)addrOpnd->m_address, &newOpnd), addrOpnd->GetAddrOpndKind());
+		addrOpnd->SetEncodedValue((Js::Var)this->EncodeAddress(instr, addrOpnd, (size_t)addrOpnd->m_address, &newOpnd), addrOpnd->GetAddrOpndKind());
 #else
 
         addrOpnd->SetEncodedValue((Js::Var)this->EncodeValue(instr, addrOpnd, (IntConstType)addrOpnd->m_address, &newOpnd), addrOpnd->GetAddrOpndKind());
@@ -430,7 +447,7 @@ Security::EncodeAddress(IR::Instr *instr, IR::Opnd *opnd, size_t value, IR::RegO
 
     instrNew = LowererMD::CreateAssign(regOpnd, opnd, instr);
 
-    size_t cookie = (size_t)Math::Rand();
+	size_t cookie = (size_t)Math::Rand();
     IR::AddrOpnd *cookieOpnd = IR::AddrOpnd::New((Js::Var)cookie, IR::AddrOpndKindConstant, instr->m_func);
     instrNew = IR::Instr::New(Js::OpCode::XOR, regOpnd, regOpnd, cookieOpnd, instr->m_func);
     instr->InsertBefore(instrNew);

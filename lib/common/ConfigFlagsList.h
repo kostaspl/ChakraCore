@@ -1347,6 +1347,7 @@ FLAGNR(Boolean, CFG, "Force enable CFG on jshost. version in the jshost's manife
 
 #if DBG
     FLAGNR(Number, SimulatePolyCacheWithOneTypeForInlineCacheIndex, "Use with SimulatePolyCacheWithOneTypeForFunction to simulate creating a polymorphic inline cache containing only one type due to a collision, for testing ObjTypeSpec", -1)
+	FLAGNR(Boolean, DumpJITBufferInfo, "Print JIT code buffer information.", false)
 #endif
 
 #undef FLAG_REGOVR_EXP
