@@ -373,6 +373,7 @@ template <typename SyncObject>
 bool
 EmitBufferManager<SyncObject>::CommitBuffer(EmitBufferAllocation* allocation, __out_bcount(bytes) BYTE* destBuffer, __in size_t bytes, __in_bcount(bytes) const BYTE* sourceBuffer, __in DWORD alignPad)
 {
+#if DBG_DUMP
 	if (Js::Configuration::Global.flags.IsEnabled(Js::DumpJITBufferInfoFlag))
 	{
 		printf("Committing buffer \"%ws\"", name);
@@ -381,6 +382,7 @@ EmitBufferManager<SyncObject>::CommitBuffer(EmitBufferAllocation* allocation, __
 		printf("\n\t source addr = 0x%p", sourceBuffer);
 		printf("\n\t dest addr = 0x%p\n", destBuffer);
 	}
+#endif
 
     AutoRealOrFakeCriticalSection<SyncObject> autoCs(&this->criticalSection);
 
