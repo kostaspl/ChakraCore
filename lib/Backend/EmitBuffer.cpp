@@ -381,9 +381,6 @@ EmitBufferManager<SyncObject>::CommitBuffer(EmitBufferAllocation* allocation, __
 		printf("\n\t alignPad = %lu", alignPad);
 		printf("\n\t source addr = 0x%p", sourceBuffer);
 		printf("\n\t dest addr = 0x%p\n", destBuffer);
-		if (bytes > 1000) {
-			printf("LOL");
-		}
 	}
 #endif
 
