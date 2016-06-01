@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Api.cpp" />
@@ -36,18 +36,17 @@
     <ClInclude Include="DaylightTimeHelper.h" />
     <ClInclude Include="unicode.h" />
     <ClInclude Include="vtregistry.h" />
-    <ClInclude Include="NumberUtilities.inc" />
     <ClInclude Include="ByteSwap.h" />
     <ClInclude Include="CommonCommonPch.h" />
     <ClInclude Include="GetCurrentFrameID.h" />
     <ClInclude Include="NumberUtilitiesBase.h" />
     <ClInclude Include="SmartFPUControl.h" />
-    <ClInclude Include="StdAfx.h" />
     <ClInclude Include="Int64Math.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Jobs.inl" />
     <None Include="vtinfo.inl" />
+    <None Include="NumberUtilities.inl" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="arm">

@@ -30,25 +30,10 @@ _declspec(thread, selectany) int IsInAssert = false;
 #define RAISE_ASSERTION(comment) DbgRaiseAssertionFailure()
 #endif
 
-#define AssertMsg(f, comment) \
-    { \
-        if (!(f)) \
-        { \
-            AssertCount++; \
-            LOG_ASSERT(); \
-            IsInAssert = TRUE; \
-            if (!REPORT_ASSERT(f, comment)) \
-            { \
-                RAISE_ASSERTION(comment); \
-            } \
-            IsInAssert = FALSE; \
-            __analysis_assume(false); \
-        } \
-    }
-
-#define Assert(exp)           AssertMsg(exp, #exp)
-#define AssertVerify(exp)     Assert(exp)
-#define Assume(x)             Assert(x)
+#define AssertMsg(f, comment) ((void) 0)
+#define Assert(exp)           ((void) 0)
+#define AssertVerify(exp)     (exp)
+#define Assume(x)             __assume(x)
 #define DebugOnly(x)          x
 #else // DBG
 

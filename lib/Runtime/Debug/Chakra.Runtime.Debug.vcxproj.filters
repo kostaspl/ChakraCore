@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="$(MsBuildThisFileDirectory)DebugContext.cpp" />
@@ -12,6 +12,8 @@
     <ClCompile Include="$(MsBuildThisFileDirectory)MutationBreakpoint.cpp" />
     <ClCompile Include="$(MsBuildThisFileDirectory)ProbeContainer.cpp" />
     <ClCompile Include="$(MsBuildThisFileDirectory)SourceContextInfo.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)DiagHelperMethodWrapper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RuntimeDebugPch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugContext.h" />
@@ -25,5 +27,7 @@
     <ClInclude Include="MutationBreakpoint.h" />
     <ClInclude Include="ProbeContainer.h" />
     <ClInclude Include="SourceContextInfo.h" />
+    <ClInclude Include="DiagHelperMethodWrapper.h" />
+    <ClInclude Include="RuntimeDebugPch.h" />
   </ItemGroup>
 </Project>
