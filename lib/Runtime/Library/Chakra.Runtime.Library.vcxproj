@@ -7,6 +7,7 @@
     <ProjectGuid>{706083F7-6AA4-4558-A153-6352EF9110F7}</ProjectGuid>
     <RootNamespace>JS</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -39,6 +40,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SdkLibPath)\clr45</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>RuntimeLibraryPch.h</PrecompiledHeaderFile>
+      <ControlFlowGuard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Guard</ControlFlowGuard>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -66,7 +68,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)SimdBool16x8Lib.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)JavascriptSimdBool8x16.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SimdBool8x16Lib.cpp" />
-
     <ClCompile Include="$(MSBuildThisFileDirectory)ArrayBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BoundFunction.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BufferStringBuilder.cpp" />
@@ -152,7 +153,6 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)SubString.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)UriHelper.cpp" />
-
     <ClCompile Include="$(MSBuildThisFileDirectory)ExternalLibraryBase.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)IntlEngineInterfaceExtensionObject.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)JavascriptErrorDebug.cpp" />
@@ -177,7 +177,6 @@
     <ClInclude Include="JavascriptSimdBool32x4.h" />
     <ClInclude Include="JavascriptSimdBool16x8.h" />
     <ClInclude Include="JavascriptSimdBool8x16.h" />
-
     <ClInclude Include="SimdFloat32x4Lib.h" />
     <ClInclude Include="SimdFloat64x2Lib.h" />
     <ClInclude Include="SimdInt32x4Lib.h" />
@@ -189,7 +188,6 @@
     <ClInclude Include="SimdBool32x4Lib.h" />
     <ClInclude Include="SimdBool16x8Lib.h" />
     <ClInclude Include="SimdBool8x16Lib.h" />
-
     <ClInclude Include="ArrayBuffer.h" />
     <ClInclude Include="BoundFunction.h" />
     <ClInclude Include="BufferStringBuilder.h" />

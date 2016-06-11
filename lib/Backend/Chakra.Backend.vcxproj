@@ -7,6 +7,7 @@
     <ProjectGuid>{18CF279F-188D-4655-B03D-74F65388E7D1}</ProjectGuid>
     <RootNamespace>JS</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -42,6 +43,7 @@
     <ClCompile>
       <!-- /Ob1 -->
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <ControlFlowGuard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Guard</ControlFlowGuard>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup Condition="'$(BuildJIT)'!='false'">

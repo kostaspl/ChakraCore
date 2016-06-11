@@ -6,6 +6,7 @@
     <ProjectGuid>{73CE5C59-E0BA-413D-A73C-3EECE067891B}</ProjectGuid>
     <RootNamespace>Js</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -21,6 +22,7 @@
         %(DisableSpecificWarnings);
         4458; <!-- Declaration hides class member -->
         4477; <!-- TODO: Format string specifier incorrect on x64 --></DisableSpecificWarnings>
+      <ControlFlowGuard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Guard</ControlFlowGuard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>

@@ -23,6 +23,10 @@ extern "C" PVOID __guard_check_icall_fptr;
 extern "C" void __cdecl _alloca_probe_16();
 #endif
 
+#ifdef _CONTROL_FLOW_GUARD
+extern "C" void _fastcall _guard_check_icall(uintptr_t);
+#endif
+
 namespace Js
 {
     DEFINE_RECYCLER_TRACKER_PERF_COUNTER(JavascriptFunction);

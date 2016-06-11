@@ -7,6 +7,7 @@
     <RootNamespace>Chakra</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <TargetName>ChakraCore</TargetName>
+    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -34,6 +35,7 @@
         $(ChakraCoreRootDirectory)Lib\Backend;
         %(AdditionalIncludeDirectories);
       </AdditionalIncludeDirectories>
+      <ControlFlowGuard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Guard</ControlFlowGuard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

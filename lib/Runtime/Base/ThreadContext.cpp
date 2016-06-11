@@ -39,6 +39,10 @@
 #include "Telemetry.h"
 #endif
 
+#ifdef _CONTROL_FLOW_GUARD
+extern "C" void _fastcall _guard_check_icall(uintptr_t);
+#endif
+
 int TotalNumberOfBuiltInProperties = Js::PropertyIds::_countJSOnlyProperty;
 
 /*

@@ -5,6 +5,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0216C4BE-86CE-478D-A134-23EAEE545B9D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -27,6 +28,7 @@
         $(IntDir);
         %(AdditionalIncludeDirectories);
       </AdditionalIncludeDirectories>
+      <ControlFlowGuard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Guard</ControlFlowGuard>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>ch.def</ModuleDefinitionFile>

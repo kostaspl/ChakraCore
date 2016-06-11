@@ -12,6 +12,8 @@
     <ClCompile Include="$(MsBuildThisFileDirectory)MutationBreakpoint.cpp" />
     <ClCompile Include="$(MsBuildThisFileDirectory)ProbeContainer.cpp" />
     <ClCompile Include="$(MsBuildThisFileDirectory)SourceContextInfo.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)DiagHelperMethodWrapper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RuntimeDebugPch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugContext.h" />
@@ -25,5 +27,7 @@
     <ClInclude Include="MutationBreakpoint.h" />
     <ClInclude Include="ProbeContainer.h" />
     <ClInclude Include="SourceContextInfo.h" />
+    <ClInclude Include="DiagHelperMethodWrapper.h" />
+    <ClInclude Include="RuntimeDebugPch.h" />
   </ItemGroup>
 </Project>

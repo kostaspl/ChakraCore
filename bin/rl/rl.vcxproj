@@ -5,6 +5,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{80A70F57-0F89-458F-AFD3-CE2159EB9BB1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <TargetName>rl</TargetName>
@@ -29,6 +30,9 @@
         $(NoThrowNewLib)
       </AdditionalDependencies>
     </Link>
+    <ClCompile>
+      <ControlFlowGuard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Guard</ControlFlowGuard>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)rl.cpp" />
@@ -36,7 +40,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)rlmp.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)rlrun.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)rlregr.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)xmlreader.cpp"  />
+    <ClCompile Include="$(MSBuildThisFileDirectory)xmlreader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rl.h" />
