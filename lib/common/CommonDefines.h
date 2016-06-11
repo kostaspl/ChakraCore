@@ -36,6 +36,8 @@
 #define DEBUG 1
 #endif
 
+#define _CONTROL_FLOW_GUARD 1
+
 // if test hook is enabled, debug config options are enabled too
 #ifdef ENABLE_TEST_HOOKS
 #ifndef ENABLE_DEBUG_CONFIG_OPTIONS

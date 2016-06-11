@@ -227,8 +227,7 @@ Security::DontEncode(IR::Opnd *opnd)
 	{
 		IR::AddrOpnd *addrOpnd = opnd->AsAddrOpnd();
 		return (
-			addrOpnd->m_address == nullptr ||
-			!Js::TaggedNumber::Is(addrOpnd->m_address));
+			addrOpnd->m_address == nullptr || (!Js::TaggedNumber::Is(addrOpnd->m_address) && addrOpnd->GetAddrOpndKind() == IR::AddrOpndKind::AddrOpndKindDynamicVar));
 	}
 
 	case IR::OpndKindHelperCall:
@@ -250,16 +249,16 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
 		return;
 	}
 
+	if (instr->m_opcode == Js::OpCode::SHL ||
+		instr->m_opcode == Js::OpCode::SHR ||
+		instr->m_opcode == Js::OpCode::SAR)
+		return;
+
 	switch(opnd->GetKind())
 	{
 	case IR::OpndKindIntConst:
 	{
 		IR::IntConstOpnd *intConstOpnd = opnd->AsIntConstOpnd();
-
-		if (instr->m_opcode == Js::OpCode::SHL ||
-			instr->m_opcode == Js::OpCode::SHR ||
-			instr->m_opcode == Js::OpCode::SAR)
-			return;
 
 		if (opnd != instr->GetSrc1())
 		{

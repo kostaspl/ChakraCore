@@ -23,6 +23,10 @@ extern "C" PVOID __guard_check_icall_fptr;
 extern "C" void __cdecl _alloca_probe_16();
 #endif
 
+#ifdef _CONTROL_FLOW_GUARD
+extern "C" void _fastcall _guard_check_icall(uintptr_t);
+#endif
+
 namespace Js
 {
     DEFINE_RECYCLER_TRACKER_PERF_COUNTER(JavascriptFunction);
@@ -1117,7 +1121,7 @@ dbl_align:
     }
 
 #elif _M_X64
-    template <bool doStackProbe>
+	template <bool doStackProbe>
     Var JavascriptFunction::CallFunction(RecyclableObject *function, JavascriptMethod entryPoint, Arguments args)
     {
         // compute size of stack to reserve and make sure we have enough stack.

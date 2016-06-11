@@ -33,6 +33,9 @@
 #include "Language\DynamicProfileMutator.h"
 #endif
 
+#ifdef _CONTROL_FLOW_GUARD
+extern "C" void _fastcall _guard_check_icall(uintptr_t);
+#endif
 
 #ifdef ENABLE_BASIC_TELEMETRY
 #include "Telemetry.h"
@@ -3975,6 +3978,11 @@ void ThreadContext::SetValidCallTargetForCFG(PVOID callTargetAddress, bool isSet
         size_t codeOffset = OFFSET_ADDR_WITHIN_PAGE(callTargetAddress);
 
         CFG_CALL_TARGET_INFO callTargetInfo[1];
+
+		if (isSetValid)
+			printf("Setting CFG for addr %p\n", callTargetAddress);
+
+		
 
         callTargetInfo[0].Offset = codeOffset;
         callTargetInfo[0].Flags = (isSetValid? CFG_CALL_TARGET_VALID : 0);

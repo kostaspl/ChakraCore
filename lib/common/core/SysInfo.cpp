@@ -267,7 +267,7 @@ AutoSystemInfo::IsCFGEnabled()
 #if defined(_CONTROL_FLOW_GUARD)
     return true
 #ifdef ENABLE_DEBUG_CONFIG_OPTIONS
-        && IsWinThresholdOrLater() && !PHASE_OFF1(Js::CFGPhase)
+        /* && IsWinThresholdOrLater() */ && !PHASE_OFF1(Js::CFGPhase)
 #endif //ENABLE_DEBUG_CONFIG_OPTIONS
         ;
 #else
