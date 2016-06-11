@@ -140,9 +140,7 @@
 // Other features
 // #define CHAKRA_CORE_DOWN_COMPAT 1
 
-#if defined(ENABLE_DEBUG_CONFIG_OPTIONS) || defined(CHAKRA_CORE_DOWN_COMPAT)
 #define DELAYLOAD_SET_CFG_TARGET 1
-#endif
 
 #ifdef NTBUILD
 #define ENABLE_PROJECTION

@@ -416,6 +416,7 @@ namespace Js
                 m_pfnSetProcessValidCallTargets = (PFNCSetProcessValidCallTargets) GetFunction("SetProcessValidCallTargets");
                 if (m_pfnSetProcessValidCallTargets == nullptr)
                 {
+					printf("Failed to find SetProcessValidCallTargets !!!");
                     return FALSE;
                 }
             }
@@ -424,6 +425,7 @@ namespace Js
             return m_pfnSetProcessValidCallTargets(hProcess, VirtualAddress, RegionSize, NumberOfOffsets, OffsetInformation);
         }
 
+		printf("Failed to call SetProcessValidCallTargets !!!");
         return FALSE;
 #else
         return SetProcessValidCallTargets(hProcess, VirtualAddress, RegionSize, NumberOfOffsets, OffsetInformation);

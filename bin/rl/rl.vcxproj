@@ -33,6 +33,9 @@
     <ClCompile>
       <ControlFlowGuard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Guard</ControlFlowGuard>
     </ClCompile>
+    <ClCompile>
+      <ControlFlowGuard Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Guard</ControlFlowGuard>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)rl.cpp" />
