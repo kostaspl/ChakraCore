@@ -4,6 +4,8 @@
 //-------------------------------------------------------------------------------------------------------
 #include "stdafx.h"
 #include "Core/AtomLockGuids.h"
+#include "Pathcch.h"
+#include <direct.h>
 
 unsigned int MessageBase::s_messageCount = 0;
 
@@ -276,6 +278,12 @@ static void CALLBACK PromiseContinuationCallback(JsValueRef task, void *callback
 
 HRESULT RunScript(LPCWSTR fileName, LPCWSTR fileContents, BYTE *bcBuffer, char16 *fullPath)
 {
+	LPWSTR fileNameCopy = StrDupW(fileName);
+	PathCchRemoveFileSpec(fileNameCopy, wcslen(fileNameCopy));
+	// wprintf(L"Setting working dir to %ls\n", fileNameCopy);
+	_wchdir(fileNameCopy);
+	LocalFree(fileNameCopy);
+
     HRESULT hr = S_OK;
     MessageQueue * messageQueue = new MessageQueue();
     WScriptJsrt::AddMessageQueue(messageQueue);

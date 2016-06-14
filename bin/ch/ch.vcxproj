@@ -39,7 +39,7 @@
         oleaut32.lib;
         ole32.lib;
         kernel32.lib;
-      </AdditionalDependencies>
+      Pathcch.lib;</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
