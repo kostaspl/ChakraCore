@@ -4042,7 +4042,10 @@ void ThreadContext::SetValidCallTargetForCFG(PVOID callTargetAddress, bool isSet
             Output::Flush();
         }
 #endif
-    }
+	}
+	else {
+		printf("SetValidCallTargetForCFG() called but IsCFGEnabled() returned false!\n");
+	}
 #endif // _CONTROL_FLOW_GUARD
 }
 

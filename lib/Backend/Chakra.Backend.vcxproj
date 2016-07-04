@@ -46,6 +46,9 @@
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <ControlFlowGuard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Guard</ControlFlowGuard>
     </ClCompile>
+    <MASM>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/D_CONTROL_FLOW_GUARD %(AdditionalOptions)</AdditionalOptions>
+    </MASM>
   </ItemDefinitionGroup>
   <ItemGroup Condition="'$(BuildJIT)'!='false'">
     <ClCompile Include="$(MSBuildThisFileDirectory)AgenPeeps.cpp">
