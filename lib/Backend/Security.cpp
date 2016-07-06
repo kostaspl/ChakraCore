@@ -202,22 +202,18 @@ Security::DontEncode(IR::Opnd *opnd)
     {
     case IR::OpndKindIntConst:
     {
-        IR::IntConstOpnd *intConstOpnd = opnd->AsIntConstOpnd();
-        return intConstOpnd->m_dontEncode;
+		return false;
     }
 
     case IR::OpndKindAddr:
     {
         IR::AddrOpnd *addrOpnd = opnd->AsAddrOpnd();
-        return (addrOpnd->m_dontEncode ||
-                !addrOpnd->IsVar() ||
-                addrOpnd->m_address == nullptr ||
+        return (addrOpnd->m_address == nullptr ||
                 !Js::TaggedNumber::Is(addrOpnd->m_address));
     }
 
     case IR::OpndKindHelperCall:
-        // Never encode helper call addresses, as these are always internal constants.
-        return true;
+        return false;
     }
 
     return false;
@@ -240,10 +236,11 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
     {
         IR::IntConstOpnd *intConstOpnd = opnd->AsIntConstOpnd();
 
-        if (!this->IsLargeConstant(intConstOpnd->AsInt32()))
-        {
-            return;
-        }
+		if (instr->m_opcode == Js::OpCode::SHL ||
+			instr->m_opcode == Js::OpCode::SHR ||
+			instr->m_opcode == Js::OpCode::SAR ||
+			instr->m_opcode == Js::OpCode::RET)
+			return;
 
         if (opnd != instr->GetSrc1())
         {
@@ -267,12 +264,6 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
     case IR::OpndKindAddr:
     {
         IR::AddrOpnd *addrOpnd = opnd->AsAddrOpnd();
-
-        // Only encode large constants.  Small ones don't allow control of enough bits
-        if (Js::TaggedInt::Is(addrOpnd->m_address) && !this->IsLargeConstant(Js::TaggedInt::ToInt32(addrOpnd->m_address)))
-        {
-            return;
-        }
 
         if (opnd != instr->GetSrc1())
         {

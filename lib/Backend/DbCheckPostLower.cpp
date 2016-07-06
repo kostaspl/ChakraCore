@@ -9,13 +9,14 @@
 void
 DbCheckPostLower::Check()
 {
+	/*
     bool doOpHelperCheck = Js::Configuration::Global.flags.CheckOpHelpers && !this->func->isPostLayout;
     bool isInHelperBlock = false;
 
     FOREACH_INSTR_IN_FUNC_EDITING(instr, instrNext, this->func)
     {
         Assert(Lowerer::ValidOpcodeAfterLower(instr, this->func));
-        LowererMD::Legalize</*verify*/true>(instr);
+        LowererMD::Legalize<true>(instr);
         switch(instr->GetKind())
         {
         case IR::InstrKindLabel:
@@ -181,10 +182,12 @@ DbCheckPostLower::Check()
             break;
         }
     } NEXT_INSTR_IN_FUNC_EDITING;
+	*/
 }
 
 void DbCheckPostLower::Check(IR::Opnd *opnd)
 {
+	/*
     if (opnd == NULL)
     {
         return;
@@ -212,10 +215,12 @@ void DbCheckPostLower::Check(IR::Opnd *opnd)
             AssertMsg(static_cast<uint>(TySize[opnd->AsSymOpnd()->GetType()]) + opnd->AsSymOpnd()->m_offset <= symSize, "SymOpnd cannot refer to a size greater than Sym's reference");
         }
     }
+	*/
 }
 
 void DbCheckPostLower::Check(IR::RegOpnd *regOpnd)
 {
+	/*
     if (regOpnd == NULL)
     {
         return;
@@ -240,6 +245,7 @@ void DbCheckPostLower::Check(IR::RegOpnd *regOpnd)
 #endif
         }
     }
+	*/
 }
 
 #endif // DBG
