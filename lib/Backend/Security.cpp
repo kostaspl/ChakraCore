@@ -284,13 +284,29 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
     {
         IR::IndirOpnd *indirOpnd = opnd->AsIndirOpnd();
 
+		/*
         if (!this->IsLargeConstant(indirOpnd->GetOffset()) || indirOpnd->m_dontEncode)
         {
-            return;
-        }
-        AssertMsg(indirOpnd->GetIndexOpnd() == nullptr, "Code currently doesn't support indir with offset and indexOpnd");
+			if (indirOpnd->HasAddrKind()) {
+				printf("\n-- offset \t\t= %p\n", (void *)indirOpnd->GetOffset());
+				printf("-- addr \t\t= %p\n", indirOpnd->GetOriginalAddress());
+				printf("-- (addr-offset) \t= %p\n", (void *) ((intptr_t) indirOpnd->GetOriginalAddress() - (intptr_t) indirOpnd->GetOffset()));
+				printf("-- (addr-offset)+offset = %p\n", (void *) (((intptr_t)indirOpnd->GetOriginalAddress() - (intptr_t)indirOpnd->GetOffset()) + (intptr_t) indirOpnd->GetOffset()));
+			}
+			//return;
+		}
 
-        IR::IntConstOpnd *indexOpnd = IR::IntConstOpnd::New(indirOpnd->GetOffset(), TyInt32, instr->m_func);
+		if (indirOpnd->GetOffset() == 0) {
+			return;
+		}
+		*/
+
+		if (indirOpnd->GetIndexOpnd() != nullptr)
+			return;
+
+		AssertMsg(indirOpnd->GetIndexOpnd() == nullptr, "Code currently doesn't support indir with offset and indexOpnd");
+
+        IR::IntConstOpnd *indexOpnd = IR::IntConstOpnd::New(indirOpnd->GetOffset(), TyInt64, instr->m_func);
 #if DBG_DUMP || defined(ENABLE_IR_VIEWER)
         indexOpnd->decodedValue = indexOpnd->GetValue();
 #endif

@@ -865,7 +865,7 @@ EncoderMD::Encode(IR::Instr *instr, BYTE *pc, BYTE* beginCodeAddress)
             else
             {
                 AssertMsg(opr2->IsRegOpnd(), "Expected opr2 to be a valid reg");
-                AssertMsg(instrSize == this->GetOpndSize(opr2), "sf");
+                //AssertMsg(instrSize == this->GetOpndSize(opr2), "sf");
                 AssertMsg(instrSize == this->GetOpndSize(opr1), "Opnd Size mismatch");
 
                 rexByte    |= this->GetRexByte(this->REXR, opr2);
