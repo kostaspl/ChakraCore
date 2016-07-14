@@ -26,7 +26,14 @@ private:
 
     // Large constants have more than 16 significant bits.
     // Constants except these are considered large: 0x0000????, 0xffff????, 0x????0000, 0x????ffff
-    static bool     IsLargeConstant(int32 value) { return static_cast<int16>(value) != 0 && static_cast<int16>(value) != -1 && (value >> 16) != 0 && (value >> 16) != -1; }
+    // static bool     IsLargeConstant(int32 value) { return static_cast<int16>(value) != 0 && static_cast<int16>(value) != -1 && (value >> 16) != 0 && (value >> 16) != -1; }
+
+	static bool     IsLargeConstant(int32 value) {
+		return		((value & 0xFFFFFFFC) != 0
+			&& (value & 0xFFFFFFFC) != 0xFFFFFFFC
+			&& (value & 0x3FFFFFFF) != 0
+			&& (value & 0x3FFFFFFF) != 0x3FFFFFFF);
+	}
 
     void            InsertNOPBefore(IR::Instr *instr);
     int             GetNextNOPInsertPoint();

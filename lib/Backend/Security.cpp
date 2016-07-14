@@ -236,6 +236,22 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
     {
         IR::IntConstOpnd *intConstOpnd = opnd->AsIntConstOpnd();
 
+		/*
+		if (!this->IsLargeConstant(intConstOpnd->AsInt32()))
+		{
+			if (intConstOpnd->AsInt32() != 0 && intConstOpnd->AsInt32() != -1 && intConstOpnd->AsInt32() != 1)
+				printf("!IsLargeConstant: %d (0x%x)\n", intConstOpnd->AsInt32(), intConstOpnd->AsInt32());
+			return;
+		}
+		*/
+
+		int32 val = intConstOpnd->AsInt32();
+
+		if (val <= 8 && val >= -8) {
+			//printf("!IsLargeConstant: %d (0x%x)\n", intConstOpnd->AsInt32(), intConstOpnd->AsInt32());
+			return;
+		}
+
 		if (instr->m_opcode == Js::OpCode::SHL ||
 			instr->m_opcode == Js::OpCode::SHR ||
 			instr->m_opcode == Js::OpCode::SAR ||
