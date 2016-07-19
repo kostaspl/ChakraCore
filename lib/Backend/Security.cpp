@@ -208,8 +208,7 @@ Security::DontEncode(IR::Opnd *opnd)
     case IR::OpndKindAddr:
     {
         IR::AddrOpnd *addrOpnd = opnd->AsAddrOpnd();
-        return (addrOpnd->m_address == nullptr ||
-                !Js::TaggedNumber::Is(addrOpnd->m_address));
+		return (addrOpnd->m_address == nullptr);
     }
 
     case IR::OpndKindHelperCall:
@@ -236,26 +235,16 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
     {
         IR::IntConstOpnd *intConstOpnd = opnd->AsIntConstOpnd();
 
-		/*
-		if (!this->IsLargeConstant(intConstOpnd->AsInt32()))
-		{
-			if (intConstOpnd->AsInt32() != 0 && intConstOpnd->AsInt32() != -1 && intConstOpnd->AsInt32() != 1)
-				printf("!IsLargeConstant: %d (0x%x)\n", intConstOpnd->AsInt32(), intConstOpnd->AsInt32());
-			return;
-		}
-		*/
-
 		int32 val = intConstOpnd->AsInt32();
 
-		if (val <= 8 && val >= -8) {
-			//printf("!IsLargeConstant: %d (0x%x)\n", intConstOpnd->AsInt32(), intConstOpnd->AsInt32());
+		if (val <= 3 && val >= -3)
 			return;
-		}
 
 		if (instr->m_opcode == Js::OpCode::SHL ||
 			instr->m_opcode == Js::OpCode::SHR ||
 			instr->m_opcode == Js::OpCode::SAR ||
-			instr->m_opcode == Js::OpCode::RET)
+			instr->m_opcode == Js::OpCode::RET ||
+			instr->m_opcode == Js::OpCode::NOP)
 			return;
 
         if (opnd != instr->GetSrc1())
@@ -281,6 +270,15 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
     {
         IR::AddrOpnd *addrOpnd = opnd->AsAddrOpnd();
 
+		if (!Js::TaggedNumber::Is(addrOpnd->m_address) && addrOpnd->GetAddrOpndKind() == IR::AddrOpndKind::AddrOpndKindDynamicVar /*
+			&& addrOpnd->GetValueType() != ValueType::Boolean && addrOpnd->GetValueType() != ValueType::Null && addrOpnd->GetValueType() != ValueType::Undefined
+			&& addrOpnd->GetValueType() != ValueType::Int && addrOpnd->GetValueType() != ValueType::Float && addrOpnd->GetValueType() != ValueType::Number
+			&& addrOpnd->GetValueType() != ValueType::Symbol && addrOpnd->GetValueType() != ValueType::UninitializedObject */
+			&& addrOpnd->GetValueType() == ValueType::Uninitialized) {
+			printf("addr = %p\n", addrOpnd->m_address);
+			return;
+		}
+
         if (opnd != instr->GetSrc1())
         {
             Assert(opnd == instr->GetSrc2());
@@ -297,26 +295,12 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
     break;
 
     case IR::OpndKindIndir:
-    {
-        IR::IndirOpnd *indirOpnd = opnd->AsIndirOpnd();
+	{
+		IR::IndirOpnd *indirOpnd = opnd->AsIndirOpnd();
 
-		/*
-        if (!this->IsLargeConstant(indirOpnd->GetOffset()) || indirOpnd->m_dontEncode)
-        {
-			if (indirOpnd->HasAddrKind()) {
-				printf("\n-- offset \t\t= %p\n", (void *)indirOpnd->GetOffset());
-				printf("-- addr \t\t= %p\n", indirOpnd->GetOriginalAddress());
-				printf("-- (addr-offset) \t= %p\n", (void *) ((intptr_t) indirOpnd->GetOriginalAddress() - (intptr_t) indirOpnd->GetOffset()));
-				printf("-- (addr-offset)+offset = %p\n", (void *) (((intptr_t)indirOpnd->GetOriginalAddress() - (intptr_t)indirOpnd->GetOffset()) + (intptr_t) indirOpnd->GetOffset()));
-			}
-			//return;
-		}
-
-		if (indirOpnd->GetOffset() == 0) {
+		if (indirOpnd->GetOffset() == 0)
 			return;
-		}
-		*/
-
+		
 		if (indirOpnd->GetIndexOpnd() != nullptr)
 			return;
 
