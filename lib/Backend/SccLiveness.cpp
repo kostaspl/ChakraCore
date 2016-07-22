@@ -93,7 +93,7 @@ SCCLiveness::Build()
                 Assert(instr->GetSrc1()->AsRegOpnd()->m_sym->m_instrDef);
                 helperOpnd = instr->GetSrc1()->AsRegOpnd()->m_sym->m_instrDef->GetSrc1();
             }
-            Assert(!helperOpnd || BailOutInfo::IsBailOutHelper(helperOpnd->AsHelperCallOpnd()->m_fnHelper));
+            //Assert(!helperOpnd || BailOutInfo::IsBailOutHelper(helperOpnd->AsHelperCallOpnd()->m_fnHelper));
 #endif
             ProcessBailOutUses(instr);
         }

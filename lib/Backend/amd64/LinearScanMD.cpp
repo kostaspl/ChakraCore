@@ -292,7 +292,7 @@ LinearScanMD::GenerateBailOut(IR::Instr * instr, __in_ecount(registerSaveSymsCou
     // Load the bailout target into rax
     //     mov  rax, BailOut
     //     call rax
-    Assert(instr->GetSrc1()->IsHelperCallOpnd());
+    //Assert(instr->GetSrc1()->IsHelperCallOpnd());
     Lowerer::InsertMove(IR::RegOpnd::New(nullptr, RegRAX, TyMachPtr, func), instr->GetSrc1(), instr);
     instr->ReplaceSrc1(IR::RegOpnd::New(nullptr, RegRAX, TyMachPtr, func));
 }
