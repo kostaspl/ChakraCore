@@ -266,6 +266,10 @@ SCCLiveness::Build()
         {
             IR::LabelInstr *targetLabel = instr->AsBranchInstr()->GetTarget();
 
+			if (instr->IsInjected()) {
+				targetLabel = instr->AsBranchInstr()->GetInjectedLabel();
+			}
+
             if (targetLabel->isOpHelper && instr->AsBranchInstr()->IsConditional())
             {
                 // If we have:

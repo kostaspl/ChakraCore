@@ -507,6 +507,41 @@ Func::Codegen()
         lowerer.FinalLower();
         END_CODEGEN_PHASE(this, Js::FinalLowerPhase);
 
+		FOREACH_REAL_INSTR_IN_FUNC_EDITING(instr, instrNext, this)
+		{
+			if (instr->m_opcode == Js::OpCode::JMP && instr->AsBranchInstr() != NULL) {
+				//
+				// Find the following:
+				//	 JMP $label
+				// and convert it to:
+				//	 LEA %reg, [%rip + 0xOFFSET_TO_LABEL & cookie]
+				//   LEA %reg, [%reg + 0xOFFSET_TO_LABEL & ~cookie]
+				//   JMP %reg
+				//
+				IR::LabelInstr *targetLabel = instr->AsBranchInstr()->GetTarget();
+
+				if (!targetLabel) continue;
+
+				puts("GOT JMP!!!");
+
+				IR::RegOpnd *regOpnd = IR::RegOpnd::New(TyUint64, instr->m_func);
+				regOpnd->SetReg(RegR14);
+				IR::RegOpnd *raxOpnd = IR::RegOpnd::New(nullptr, RegRAX, TyUint32, instr->m_func);
+				IR::IndirOpnd *indirOpnd = IR::IndirOpnd::New(raxOpnd, 0xDEADBEEF, TyMachPtr, instr->m_func);
+				indirOpnd->SetIsInjected(true);
+				IR::Instr *leaInstr = Lowerer::InsertLea(regOpnd, indirOpnd, instr);
+				leaInstr->SetIsInjected(true);
+				//instr->InsertBefore(leaInstr);
+
+				IR::MultiBranchInstr *newJmp = IR::MultiBranchInstr::New(Js::OpCode::JMP, regOpnd, instr->m_func);
+				newJmp->SetIsInjected(true);
+				newJmp->SetInjectedLabel(targetLabel);
+				instr->InsertBefore(newJmp);
+
+				instr->Remove();
+			}
+		} NEXT_REAL_INSTR_IN_FUNC_EDITING;
+
         // Encoder
         BEGIN_CODEGEN_PHASE(this, Js::EncoderPhase);
 

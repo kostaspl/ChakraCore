@@ -530,8 +530,12 @@ LinearScan::CheckOpHelper(IR::Instr *instr)
             IR::Instr * targetInstr = nullptr;
             if (instr->IsBranchInstr() && instr->AsBranchInstr()->IsUnconditional())
             {
-                AssertMsg(!instr->AsBranchInstr()->IsMultiBranch(), "Not supported for Multibranch");
+                //AssertMsg(!instr->AsBranchInstr()->IsMultiBranch(), "Not supported for Multibranch");
                 targetInstr = instr->AsBranchInstr()->GetTarget();
+
+				if (instr->IsInjected()) {
+					targetInstr = instr->AsBranchInstr()->GetInjectedLabel();
+				}
             }
 
             /*

@@ -1543,6 +1543,10 @@ MultiBranchInstr::New(Js::OpCode opcode, Func * func)
 bool
 BranchInstr::ReplaceTarget(IR::LabelInstr * oldLabelInstr, IR::LabelInstr * newLabelInstr)
 {
+	if (this->IsInjected()) {
+		this->AsBranchInstr()->SetInjectedLabel(newLabelInstr);
+		return true;
+	}
     if (this->IsMultiBranch())
     {
         return this->AsMultiBrInstr()->ReplaceTarget(oldLabelInstr, newLabelInstr);
@@ -1803,6 +1807,11 @@ BranchInstr::IsLoopTail(Func * func)
 {
     Assert(func->isPostLower);
     IR::LabelInstr * target = this->GetTarget();
+
+	if (IsInjected()) {
+		target = GetInjectedLabel();
+	}
+
     if (!target->m_isLoopTop)
     {
         return false;

@@ -13,6 +13,41 @@ Security::EncodeLargeConstants()
         return;
     }
 
+	/*
+	FOREACH_REAL_INSTR_IN_FUNC_EDITING(instr, instrNext, this->func)
+	{
+		if (instr->m_opcode == Js::OpCode::JMP && instr->AsBranchInstr() != NULL) {
+			//
+			// Find the following:
+			//	 JMP $label
+			// and convert it to:
+			//	 LEA %reg, [%rip + 0xOFFSET_TO_LABEL & cookie]
+			//   LEA %reg, [%reg + 0xOFFSET_TO_LABEL & ~cookie]
+			//   JMP %reg
+			//
+			IR::LabelInstr *targetLabel = instr->AsBranchInstr()->GetTarget();
+
+			if (!targetLabel) continue;
+
+			IR::RegOpnd *regOpnd = IR::RegOpnd::New(TyUint64, instr->m_func);
+			IR::RegOpnd *raxOpnd = IR::RegOpnd::New(nullptr, RegRAX, TyUint32, instr->m_func);
+			IR::IndirOpnd *indirOpnd = IR::IndirOpnd::New(raxOpnd, 0xDEADBEEF, TyMachPtr, func);
+			indirOpnd->SetIsInjected(true);
+			IR::Instr *leaInstr = Lowerer::InsertLea(regOpnd, indirOpnd, instr);
+			leaInstr->SetIsInjected(true);
+			//instr->InsertBefore(leaInstr);
+
+			IR::MultiBranchInstr *newJmp = IR::MultiBranchInstr::New(Js::OpCode::JMP, regOpnd, instr->m_func);
+			newJmp->SetIsInjected(true);
+			newJmp->SetInjectedLabel(targetLabel);
+			instr->InsertBefore(newJmp);
+			
+			instr->Remove();
+			
+		}
+	} NEXT_REAL_INSTR_IN_FUNC_EDITING;
+	*/
+
     FOREACH_REAL_INSTR_IN_FUNC_EDITING(instr, instrNext, this->func)
     {
         if (!instr->IsRealInstr())
@@ -98,7 +133,7 @@ Security::InsertNOPs()
         {
             instr = instr->GetNextRealInstr();
         }
-        if (instr == nullptr)
+        if (instr == nullptr || instr->IsInjected())
         {
             break;
         }
@@ -198,6 +233,10 @@ Security::InsertSmallNOP(IR::Instr * instr, DWORD nopSize)
 bool
 Security::DontEncode(IR::Opnd *opnd)
 {
+	if (opnd->IsInjected()) {
+		return true;
+	}
+
     switch (opnd->GetKind())
     {
     case IR::OpndKindIntConst:

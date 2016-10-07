@@ -228,6 +228,9 @@ public:
     IR::RegOpnd *       FindRegUse(IR::RegOpnd *regOpnd);
     bool                IsArgumentsObject();
 
+	void				SetIsInjected(bool val) { this->m_isInjected = val; }
+	bool				IsInjected() const { return this->m_isInjected; }
+
     static IntConstOpnd *CreateUint32Opnd(const uint i, Func *const func);
     static IntConstOpnd *CreateProfileIdOpnd(const Js::ProfileId profileId, Func *const func);
     static IntConstOpnd *CreateInlineCacheIndexOpnd(const Js::InlineCacheIndex inlineCacheIndex, Func *const func);
@@ -250,6 +253,7 @@ public:
     bool                CanStoreTemp() const { return canStoreTemp; }
     void                SetCanStoreTemp() { Assert(this->IsSymOpnd() || this->IsIndirOpnd()); canStoreTemp = true; }
 protected:
+	bool				m_isInjected = false;
     ValueType           m_valueType;
     IRType              m_type;
 

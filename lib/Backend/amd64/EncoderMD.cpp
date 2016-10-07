@@ -557,7 +557,7 @@ EncoderMD::Encode(IR::Instr *instr, BYTE *pc, BYTE* beginCodeAddress)
 
     m_pc = pc;
 
-    if (instr->IsLowered() == false)
+	if (instr->IsLowered() == false)
     {
         if (instr->IsLabelInstr())
         {
@@ -746,185 +746,191 @@ EncoderMD::Encode(IR::Instr *instr, BYTE *pc, BYTE* beginCodeAddress)
         BYTE opcodeByte = *opcodeTemplate;
         BYTE rexByte = REXOVERRIDE | REXW;
 
-        switch ((*form) & FORM_MASK)
-        {
-            //
-            // This would only be required for mov rax, [64bit memory address].
-            //
-        case AX_MEM:
-            if (!opr2 || !opr2->IsMemRefOpnd())
-            {
-                continue;
-            }
+		switch ((*form) & FORM_MASK)
+		{
+			//
+			// This would only be required for mov rax, [64bit memory address].
+			//
+		case AX_MEM:
+			if (!opr2 || !opr2->IsMemRefOpnd())
+			{
+				continue;
+			}
 
-            AnalysisAssert(opr1);
-            if (opr1->IsRegOpnd() && RegRAX == opr1->AsRegOpnd()->GetReg())
-            {
-                AssertMsg(opr2, "Operand 2 must be present in AX_MEM mode");
+			AnalysisAssert(opr1);
+			if (opr1->IsRegOpnd() && RegRAX == opr1->AsRegOpnd()->GetReg())
+			{
+				AssertMsg(opr2, "Operand 2 must be present in AX_MEM mode");
 
-                if (TyInt64 == instrSize)
-                {
-                    this->EmitImmed(opr2, instrSize, 0);
-                }
-                else
-                {
-                    //
-                    // we don't have a 64 bit opnd. Hence we can will have to use
-                    // the normal MODRM/SIB encoding.
-                    //
-                    continue;
-                }
-            }
+				if (TyInt64 == instrSize)
+				{
+					this->EmitImmed(opr2, instrSize, 0);
+				}
+				else
+				{
+					//
+					// we don't have a 64 bit opnd. Hence we can will have to use
+					// the normal MODRM/SIB encoding.
+					//
+					continue;
+				}
+			}
 
-        // NYI
-        case AX_IM:
-            continue;
+			// NYI
+		case AX_IM:
+			continue;
 
-        // General immediate case. Special cases have already been checked.
-        case IMM:
-            if (!opr2->IsImmediateOpnd())
-            {
-                continue;
-            }
+			// General immediate case. Special cases have already been checked.
+		case IMM:
+			if (!opr2->IsImmediateOpnd())
+			{
+				continue;
+			}
 
-            rexByte    |= this->EmitModRM(instr, opr1, this->GetOpcodeByte2(instr) >> 3);
-            opcodeByte |= this->EmitImmed(opr2, instrSize, *form & SBIT);
-            break;
+			rexByte    |= this->EmitModRM(instr, opr1, this->GetOpcodeByte2(instr) >> 3);
+			opcodeByte |= this->EmitImmed(opr2, instrSize, *form & SBIT);
+			break;
 
-        case NO:
-            {
-                Assert(instr->m_opcode == Js::OpCode::CQO || instr->m_opcode == Js::OpCode::CDQ);
+		case NO:
+		{
+			Assert(instr->m_opcode == Js::OpCode::CQO || instr->m_opcode == Js::OpCode::CDQ);
 
-                instrSize = instr->m_opcode == Js::OpCode::CQO ? 8 : 4;
-                BYTE byte2 = this->GetOpcodeByte2(instr);
+			instrSize = instr->m_opcode == Js::OpCode::CQO ? 8 : 4;
+			BYTE byte2 = this->GetOpcodeByte2(instr);
 
-                if (byte2)
-                {
-                    *(m_pc)++ = byte2;
-                }
-            }
-            break;
+			if (byte2)
+			{
+				*(m_pc)++ = byte2;
+			}
+		}
+		break;
 
-        // Short immediate/reg.
-        case SHIMR:
-            AnalysisAssert(opr1);
-            if (!opr1->IsRegOpnd())
-            {
-                continue;
-            }
+		// Short immediate/reg.
+		case SHIMR:
+			AnalysisAssert(opr1);
+			if (!opr1->IsRegOpnd())
+			{
+				continue;
+			}
 
-            if (opr2->IsImmediateOpnd())
-            {
-                Assert(EncoderMD::IsMOVEncoding(instr));
-                if (instrSize == 8 && !instr->isInlineeEntryInstr && Math::FitsInDWord(opr2->GetImmediateValue()))
-                {
-                    // Better off using the C7 encoding as it will sign extend
-                    continue;
-                }
-            }
-            else if (!opr2->IsLabelOpnd())
-            {
-                continue;
-            }
+			if (opr2->IsImmediateOpnd())
+			{
+				Assert(EncoderMD::IsMOVEncoding(instr));
+				if (instrSize == 8 && !instr->isInlineeEntryInstr && Math::FitsInDWord(opr2->GetImmediateValue()))
+				{
+					// Better off using the C7 encoding as it will sign extend
+					continue;
+				}
+			}
+			else if (!opr2->IsLabelOpnd())
+			{
+				continue;
+			}
 
-            opcodeByte |= this->GetRegEncode(opr1->AsRegOpnd());
-            rexByte    |= this->GetRexByte(this->REXB, opr1);
+			opcodeByte |= this->GetRegEncode(opr1->AsRegOpnd());
+			rexByte    |= this->GetRexByte(this->REXB, opr1);
 
-            if (instrSize > 1)
-            {
-                opcodeByte |= 0x8; /* set the W bit */
-            }
+			if (instrSize > 1)
+			{
+				opcodeByte |= 0x8; /* set the W bit */
+			}
 
-            this->EmitImmed(opr2, instrSize, 0, true);  /* S bit known to be 0 */
-            break;
+			this->EmitImmed(opr2, instrSize, 0, true);  /* S bit known to be 0 */
+			break;
 
-        case AXMODRM:
-            AssertMsg(opr1->AsRegOpnd()->GetReg() == RegRAX, "Expected src1 of IMUL/IDIV to be RAX");
+		case AXMODRM:
+			AssertMsg(opr1->AsRegOpnd()->GetReg() == RegRAX, "Expected src1 of IMUL/IDIV to be RAX");
 
-            opr1 = opr2;
-            opr2 = nullptr;
+			opr1 = opr2;
+			opr2 = nullptr;
 
-        // FALLTHROUGH
-        case MODRM:
-        modrm:
-            AnalysisAssert(opr1);
-            if (opr2 == nullptr)
-            {
-                BYTE byte2  = (this->GetOpcodeByte2(instr) >> 3);
-                rexByte    |= this->EmitModRM(instr, opr1, byte2);
-            }
-            else if (opr1->IsRegOpnd())
-            {
-                rexByte    |= this->GetRexByte(this->REXR, opr1);
-                rexByte    |= this->EmitModRM(instr, opr2, this->GetRegEncode(opr1->AsRegOpnd()));
-                if ((*form) & DBIT)
-                {
-                    opcodeByte |= 0x2;     // set D bit
-                }
-            }
-            else
-            {
-                AssertMsg(opr2->IsRegOpnd(), "Expected opr2 to be a valid reg");
-                //AssertMsg(instrSize == this->GetOpndSize(opr2), "sf");
-                AssertMsg(instrSize == this->GetOpndSize(opr1), "Opnd Size mismatch");
+			// FALLTHROUGH
+		case MODRM:
+		modrm:
+			if (instr->m_opcode == Js::OpCode::JMP && instr->IsInjected()) {
+				//puts("Got injected JMP!");
+				IR::LabelInstr *target = instr->AsBranchInstr()->GetInjectedLabel();
+				AppendRelocEntry(RelocTypeBlindBranch, (void*)((BYTE *)m_pc - 2), target);
+			}
 
-                rexByte    |= this->GetRexByte(this->REXR, opr2);
-                rexByte    |= this->EmitModRM(instr, opr1, this->GetRegEncode(opr2->AsRegOpnd()));
-            }
-            break;
+			AnalysisAssert(opr1);
+			if (opr2 == nullptr)
+			{
+				BYTE byte2  = (this->GetOpcodeByte2(instr) >> 3);
+				rexByte    |= this->EmitModRM(instr, opr1, byte2);
+			}
+			else if (opr1->IsRegOpnd())
+			{
+				rexByte    |= this->GetRexByte(this->REXR, opr1);
+				rexByte    |= this->EmitModRM(instr, opr2, this->GetRegEncode(opr1->AsRegOpnd()));
+				if ((*form) & DBIT)
+				{
+					opcodeByte |= 0x2;     // set D bit
+				}
+			}
+			else
+			{
+				AssertMsg(opr2->IsRegOpnd(), "Expected opr2 to be a valid reg");
+				//AssertMsg(instrSize == this->GetOpndSize(opr2), "sf");
+				AssertMsg(instrSize == this->GetOpndSize(opr1), "Opnd Size mismatch");
 
-        // reg in opbyte. Only whole register allowed .
-        case SH_REG:
-            AnalysisAssert(opr1);
-            if (!opr1->IsRegOpnd())
-            {
-                continue;
-            }
-            opcodeByte |= this->GetRegEncode(opr1->AsRegOpnd());
-            rexByte    |= this->GetRexByte(this->REXB, opr1);
-            break;
+				rexByte    |= this->GetRexByte(this->REXR, opr2);
+				rexByte    |= this->EmitModRM(instr, opr1, this->GetRegEncode(opr2->AsRegOpnd()));
+			}
+			break;
 
-        // short form immed. (must be unary)
-        case SH_IM:
-            AnalysisAssert(opr1);
-            if (!opr1->IsIntConstOpnd() && !opr1->IsAddrOpnd())
-            {
-                continue;
-            }
-            instrSize    = this->GetOpndSize(opr1);
-            opcodeByte |= this->EmitImmed(opr1, instrSize, 1);
-            break;
+			// reg in opbyte. Only whole register allowed .
+		case SH_REG:
+			AnalysisAssert(opr1);
+			if (!opr1->IsRegOpnd())
+			{
+				continue;
+			}
+			opcodeByte |= this->GetRegEncode(opr1->AsRegOpnd());
+			rexByte    |= this->GetRexByte(this->REXB, opr1);
+			break;
 
-        case SHFT:
-            rexByte     |= this->EmitModRM(instr, opr1, this->GetOpcodeByte2(instr) >> 3);
-            if (opr2->IsRegOpnd())
-            {
-                AssertMsg(opr2->AsRegOpnd()->GetReg() == RegRCX, "Expected ECX as opr2 of variable shift");
-                opcodeByte |= *(opcodeTemplate + 1);
-            }
-            else
-            {
-                IntConstType value;
-                AssertMsg(opr2->IsIntConstOpnd(), "Expected register or constant as shift amount opnd");
-                value = opr2->AsIntConstOpnd()->GetValue();
-                if (value == 1)
-                {
-                    opcodeByte |= 0x10;
-                }
-                else
-                {
-                    this->EmitConst(value, 1);
-                }
-            }
-            break;
+			// short form immed. (must be unary)
+		case SH_IM:
+			AnalysisAssert(opr1);
+			if (!opr1->IsIntConstOpnd() && !opr1->IsAddrOpnd())
+			{
+				continue;
+			}
+			instrSize    = this->GetOpndSize(opr1);
+			opcodeByte |= this->EmitImmed(opr1, instrSize, 1);
+			break;
 
-        // NYI
-        case LABREL1:
-            continue;
+		case SHFT:
+			rexByte     |= this->EmitModRM(instr, opr1, this->GetOpcodeByte2(instr) >> 3);
+			if (opr2->IsRegOpnd())
+			{
+				AssertMsg(opr2->AsRegOpnd()->GetReg() == RegRCX, "Expected ECX as opr2 of variable shift");
+				opcodeByte |= *(opcodeTemplate + 1);
+			}
+			else
+			{
+				IntConstType value;
+				AssertMsg(opr2->IsIntConstOpnd(), "Expected register or constant as shift amount opnd");
+				value = opr2->AsIntConstOpnd()->GetValue();
+				if (value == 1)
+				{
+					opcodeByte |= 0x10;
+				}
+				else
+				{
+					this->EmitConst(value, 1);
+				}
+			}
+			break;
 
-        // jmp, call with full relative disp.
-        case LABREL2:
-            if (opr1 == nullptr)
+			// NYI
+		case LABREL1:
+			continue;
+
+			// jmp, call with full relative disp.
+		case LABREL2:
+			if (opr1 == nullptr)
             {
                 AssertMsg(sizeof(size_t) == sizeof(void*), "Sizes of void* assumed to be 64-bits");
                 AssertMsg(instr->IsBranchInstr(), "Invalid LABREL2 form");
@@ -1571,6 +1577,19 @@ EncoderMD::ApplyRelocs(size_t codeBufferAddress_)
                 break;
 
             }
+
+		case RelocTypeBlindBranch:
+			{
+				// The address of the target LabelInstr is saved at the reloc address.
+				IR::LabelInstr * labelInstr = reloc->getBrTargetLabel();
+				if (labelInstr->GetPC() == nullptr) continue;
+				AssertMsg(labelInstr->GetPC() != nullptr, "Branch to unemitted label?");
+				pcrel = (uint32)(labelInstr->GetPC() - ((BYTE*)reloc->m_ptr + 4));
+				*((BYTE *)relocAddress - 5) -= 0x7b;	// change LEA base from RAX to RIP
+				AssertMsg(*((uint32 *)relocAddress - 1) == 0xDEADBEEF, "Incorrect Blind Reloc");
+				*((uint32 *)relocAddress - 1) = (pcrel + 4);
+				break;
+			}
 
         case RelocTypeLabelUse:
             {

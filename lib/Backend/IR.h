@@ -179,6 +179,9 @@ public:
     bool            IsInvalidInstr() const;
     Instr*          GetInvalidInstr();
 
+	bool			IsInjected() const { return this->m_isInjected; }
+	void			SetIsInjected(bool val) { this->m_isInjected = val;  }
+
     bool            IsLinked() const { return this->m_prev != nullptr || this->m_next != nullptr; }
 
     bool            StartsBasicBlock() const;
@@ -485,8 +488,8 @@ protected:
     Opnd *          m_dst;
     Opnd *          m_src1;
     Opnd *          m_src2;
-
-
+	bool			m_isInjected = false;
+	LabelInstr *	m_InjectedLabel = NULL;
 
     void Init(Js::OpCode opcode, IRKind kind, Func * func);
     IR::Instr *     CloneInstr() const;
@@ -726,6 +729,20 @@ public:
     Js::RegSlot         GetByteCodeReg() { return m_byteCodeReg; }
     bool                HasByteCodeReg() { return m_byteCodeReg != Js::Constants::NoRegister; }
     bool                IsLoopTail(Func * func);
+
+	void				SetInjectedLabel(LabelInstr *label) { 
+		if (this->m_InjectedLabel)
+		{
+			this->m_InjectedLabel->RemoveLabelRef(this);
+		}
+		if (label)
+		{
+			label->AddLabelRef(this);
+		}
+		this->m_InjectedLabel = label; 
+	}
+
+	LabelInstr *		GetInjectedLabel() const { return this->m_InjectedLabel; }
 
 public:
     Lifetime **         m_regContent;

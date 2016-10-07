@@ -7,6 +7,7 @@ class Encoder;
 
 enum RelocType {
     RelocTypeBranch,                // cond, uncond branch
+	RelocTypeBlindBranch,           // cond, uncond branch with blinding
     RelocTypeCallPcrel,             // calls
     RelocTypeLabelUse,              // direct use of a label
     RelocTypeLabel,                 // points to label instr
@@ -56,7 +57,7 @@ public:
             {
                 m_origInlineeOffset = *((uint64*)m_origPtr);
             }
-            else if (type == RelocTypeBranch)
+            else if (type == RelocTypeBranch || type == RelocTypeBlindBranch)
             {
                 Assert(labelInstr);
                 m_labelInstr = labelInstr;
@@ -99,7 +100,7 @@ public:
 
     IR::LabelInstr *    getBrTargetLabel()  const
     {
-        Assert(m_type == RelocTypeBranch && m_labelInstr);
+        Assert((m_type == RelocTypeBranch || m_type == RelocTypeBlindBranch) && m_labelInstr);
         return m_labelInstr;
     }
     IR::LabelInstr *    getLabel()  const
