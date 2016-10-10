@@ -235,12 +235,14 @@ Encoder::Encode()
     ptrdiff_t codeSize = m_pc - m_encodeBuffer + totalJmpTableSizeInBytes;
 
 #if defined(_M_IX86) || defined(_M_X64)
-    BOOL isSuccessBrShortAndLoopAlign = false;
+	/*
+	BOOL isSuccessBrShortAndLoopAlign = false;
     // Shorten branches. ON by default
-    if (!PHASE_OFF(Js::BrShortenPhase, m_func))
+	if (!PHASE_OFF(Js::BrShortenPhase, m_func))
     {
         isSuccessBrShortAndLoopAlign = ShortenBranchesAndLabelAlign(&m_encodeBuffer, &codeSize);
     }
+	*/
 #endif
 #if DBG_DUMP | defined(VTUNE_PROFILING)
     if (this->m_func->DoRecordNativeMap())

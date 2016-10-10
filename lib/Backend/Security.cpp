@@ -29,8 +29,8 @@ Security::EncodeLargeConstants()
 
 			if (!targetLabel) continue;
 
-			IR::RegOpnd *regOpnd = IR::RegOpnd::New(TyUint64, instr->m_func);
-			IR::RegOpnd *raxOpnd = IR::RegOpnd::New(nullptr, RegRAX, TyUint32, instr->m_func);
+			IR::RegOpnd *regOpnd = IR::RegOpnd::New(nullptr, RegR15, TyMachPtr, instr->m_func);
+			IR::RegOpnd *raxOpnd = IR::RegOpnd::New(nullptr, RegRAX, TyMachPtr, instr->m_func);
 			IR::IndirOpnd *indirOpnd = IR::IndirOpnd::New(raxOpnd, 0xDEADBEEF, TyMachPtr, func);
 			indirOpnd->SetIsInjected(true);
 			IR::Instr *leaInstr = Lowerer::InsertLea(regOpnd, indirOpnd, instr);

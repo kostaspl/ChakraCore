@@ -84,7 +84,7 @@ public:
             *(uint64*) m_origPtr = m_origInlineeOffset;
         }
 
-        if (m_type == RelocTypeBranch)
+        if (m_type == RelocTypeBranch || m_type == RelocTypeBlindBranch)
         {
             m_isShortBr = false;
         }
@@ -94,8 +94,8 @@ public:
 
     bool                isLabel()           const { return isAlignedLabel() || m_type == RelocTypeLabel; }
     bool                isAlignedLabel()    const { return m_type == RelocTypeAlignedLabel; }
-    bool                isLongBr()          const { return m_type == RelocTypeBranch && !m_isShortBr; }
-    bool                isShortBr()         const { return m_type == RelocTypeBranch && m_isShortBr; }
+    bool                isLongBr()          const { return (m_type == RelocTypeBranch || m_type == RelocTypeBlindBranch) && !m_isShortBr; }
+    bool                isShortBr()         const { return (m_type == RelocTypeBranch || m_type == RelocTypeBlindBranch) && m_isShortBr; }
     BYTE*               getBrOpCodeByte()   const { return (BYTE*)m_origPtr - 1;}
 
     IR::LabelInstr *    getBrTargetLabel()  const

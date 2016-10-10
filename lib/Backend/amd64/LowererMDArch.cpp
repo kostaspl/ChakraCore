@@ -1353,7 +1353,7 @@ LowererMDArch::LowerEntryInstr(IR::EntryInstr * entryInstr)
     // restore RBX always so that the pattern doesn't occur in the prolog.
     for (RegNum reg = (RegNum)(RegNOREG + 1); reg < RegNumCount; reg = (RegNum)(reg + 1))
     {
-        if (LinearScan::IsCalleeSaved(reg) && (this->m_func->HasTry() || this->m_func->m_regsUsed.Test(reg)))
+        if (reg == RegR15 || (LinearScan::IsCalleeSaved(reg) && (this->m_func->HasTry() || this->m_func->m_regsUsed.Test(reg))))
         {
             IRType       type      = RegTypes[reg];
             IR::RegOpnd *regOpnd   = IR::RegOpnd::New(nullptr, reg, type, this->m_func);
@@ -1767,20 +1767,20 @@ LowererMDArch::GeneratePrologueStackProbe(IR::Instr *entryInstr, IntConstType fr
 IR::Instr *
 LowererMDArch::LowerExitInstr(IR::ExitInstr * exitInstr)
 {
-    uint32 savedRegSize = 0;
+	uint32 savedRegSize = 0;
 
-    // POP used callee-saved registers
+	// POP used callee-saved registers
 
-    IR::Instr * exitPrevInstr = exitInstr->m_prev;
-    AssertMsg(exitPrevInstr, "Can a function have only 1 instr ? Or is the instr chain broken");
+	IR::Instr * exitPrevInstr = exitInstr->m_prev;
+	AssertMsg(exitPrevInstr, "Can a function have only 1 instr ? Or is the instr chain broken");
 
-    IR::RegOpnd *stackPointer = IR::RegOpnd::New(nullptr, GetRegStackPointer(), TyMachReg, this->m_func);
+	IR::RegOpnd *stackPointer = IR::RegOpnd::New(nullptr, GetRegStackPointer(), TyMachReg, this->m_func);
 
-    unsigned xmmOffset = 0;
+	unsigned xmmOffset = 0;
 
-    for (RegNum reg = (RegNum)(RegNOREG + 1); reg < RegNumCount; reg = (RegNum)(reg+1))
-    {
-        if (LinearScan::IsCalleeSaved(reg) && (this->m_func->HasTry() || this->m_func->m_regsUsed.Test(reg)))
+	for (RegNum reg = (RegNum)(RegNOREG + 1); reg < RegNumCount; reg = (RegNum)(reg + 1))
+	{
+		if (reg == RegR15 || (LinearScan::IsCalleeSaved(reg) && (this->m_func->HasTry() || this->m_func->m_regsUsed.Test(reg))))
         {
             IRType       type    = RegTypes[reg];
             IR::RegOpnd *regOpnd = IR::RegOpnd::New(nullptr, reg, type, this->m_func);

@@ -509,7 +509,7 @@ Func::Codegen()
 
 		FOREACH_REAL_INSTR_IN_FUNC_EDITING(instr, instrNext, this)
 		{
-			if (instr->m_opcode == Js::OpCode::JMP && instr->AsBranchInstr() != NULL) {
+			if (false && instr->m_opcode == Js::OpCode::JMP && instr->AsBranchInstr() != NULL) {
 				//
 				// Find the following:
 				//	 JMP $label
@@ -522,11 +522,10 @@ Func::Codegen()
 
 				if (!targetLabel) continue;
 
-				puts("GOT JMP!!!");
+				//puts("GOT JMP!!!");
 
-				IR::RegOpnd *regOpnd = IR::RegOpnd::New(TyUint64, instr->m_func);
-				regOpnd->SetReg(RegR14);
-				IR::RegOpnd *raxOpnd = IR::RegOpnd::New(nullptr, RegRAX, TyUint32, instr->m_func);
+				IR::RegOpnd *regOpnd = IR::RegOpnd::New(nullptr, RegR15, TyMachPtr, instr->m_func);
+				IR::RegOpnd *raxOpnd = IR::RegOpnd::New(nullptr, RegRAX, TyMachPtr, instr->m_func);
 				IR::IndirOpnd *indirOpnd = IR::IndirOpnd::New(raxOpnd, 0xDEADBEEF, TyMachPtr, instr->m_func);
 				indirOpnd->SetIsInjected(true);
 				IR::Instr *leaInstr = Lowerer::InsertLea(regOpnd, indirOpnd, instr);

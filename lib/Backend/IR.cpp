@@ -4153,6 +4153,9 @@ Instr::Dump(IRDumpFlags flags)
     {
         BranchInstr * branchInstr = this->AsBranchInstr();
         LabelInstr * targetInstr = branchInstr->GetTarget();
+		if (this->IsInjected()) {
+			targetInstr = branchInstr->GetInjectedLabel();
+		}
         bool labelPrinted = true;
         if (targetInstr == NULL)
         {

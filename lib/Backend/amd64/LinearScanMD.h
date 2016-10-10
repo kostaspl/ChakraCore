@@ -27,8 +27,8 @@ public:
     BitVector   FilterRegIntSizeConstraints(BitVector regsBv, BitVector sizeUsageBv) const;
     bool        FitRegIntSizeConstraints(RegNum reg, BitVector sizeUsageBv) const;
     bool        FitRegIntSizeConstraints(RegNum reg, IRType type) const;
-    bool        IsAllocatable(RegNum reg, Func *func) const { return true; }
-    uint        UnAllocatableRegCount(Func *func) const { return 2; /* RSP, RBP */ }
+	bool        IsAllocatable(RegNum reg, Func *func) const { return reg != RegR15; }
+    uint        UnAllocatableRegCount(Func *func) const { return 3; /* RSP, RBP, R15 */ }
     void        LegalizeDef(IR::Instr * instr) { /* This is a nop for amd64 */ }
     void        LegalizeUse(IR::Instr * instr, IR::Opnd * opnd) { /* A nop for amd64 */ }
     void        LegalizeConstantUse(IR::Instr * instr, IR::Opnd * opnd);
