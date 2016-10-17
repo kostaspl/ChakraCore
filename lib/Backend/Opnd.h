@@ -253,7 +253,6 @@ public:
     bool                CanStoreTemp() const { return canStoreTemp; }
     void                SetCanStoreTemp() { Assert(this->IsSymOpnd() || this->IsIndirOpnd()); canStoreTemp = true; }
 protected:
-	bool				m_isInjected = false;
     ValueType           m_valueType;
     IRType              m_type;
 
@@ -281,6 +280,7 @@ public:
 #if DBG
     bool                isFakeDst:1;
 #endif
+	bool				m_isInjected = false;
     OpndKind            m_kind;
 
 };

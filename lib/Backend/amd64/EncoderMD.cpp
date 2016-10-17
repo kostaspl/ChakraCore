@@ -1583,10 +1583,15 @@ EncoderMD::ApplyRelocs(size_t codeBufferAddress_)
 				// The address of the target LabelInstr is saved at the reloc address.
 				IR::LabelInstr * labelInstr = reloc->getBrTargetLabel();
 				AssertMsg(labelInstr->GetPC() != nullptr, "Branch to unemitted label?");
-				pcrel = (uint32)(labelInstr->GetPC() - ((BYTE*)reloc->m_ptr));
-				*((BYTE *)relocAddress - 5) -= 0x7B;	// change LEA base reg from RAX to RIP
+				
+				uint32 cookie = (uint32)Math::Rand();
+
+				pcrel = (uint32)(labelInstr->GetPC() - ((BYTE*)reloc->m_ptr)) + 7;
+				*((BYTE *)relocAddress - 12) -= 0x7B;	// change LEA base reg from RAX to RIP
+				AssertMsg(*((uint32 *)((BYTE *)relocAddress - 7) - 1) == 0xDEADBEEF, "Incorrect Blind Reloc");
+				*((uint32 *)((BYTE *)relocAddress - 7) - 1) = pcrel & cookie;
 				AssertMsg(*((uint32 *)relocAddress - 1) == 0xDEADBEEF, "Incorrect Blind Reloc");
-				*((uint32 *)relocAddress - 1) = pcrel;
+				*((uint32 *)relocAddress - 1) = pcrel & ~cookie;
 				break;
 			}
 
