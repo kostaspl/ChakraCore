@@ -198,6 +198,10 @@ Security::InsertSmallNOP(IR::Instr * instr, DWORD nopSize)
 bool
 Security::DontEncode(IR::Opnd *opnd)
 {
+	if (opnd->PostOptEnc()) {
+		return false;
+	}
+
 	if (opnd->IsInjected()) {
 		return true;
 	}
@@ -208,8 +212,10 @@ Security::DontEncode(IR::Opnd *opnd)
     {
 		int32 val = opnd->AsIntConstOpnd()->AsInt32();
 
-		if (val <= 3 && val >= -3)
+		if (val >= -4 && val <= 3){
+			//if (val != 0) opnd->SetPostOptEnc(true);
 			return true;
+		}
 
 		return false;
     }
@@ -225,6 +231,7 @@ Security::DontEncode(IR::Opnd *opnd)
 			addrOpnd->GetAddrOpndKind() == IR::AddrOpndKind::AddrOpndKindDynamicVar && 
 			addrOpnd->GetValueType() == ValueType::Uninitialized) {
 			//printf("addr = %p\n", addrOpnd->m_address);
+			//opnd->SetPostOptEnc(true);
 			return true;
 		}
     }

@@ -9,6 +9,7 @@ enum RelocType {
     RelocTypeBranch,                // cond, uncond branch
 	RelocTypeBlindBranch,           // cond, uncond branch with blinding
     RelocTypeCallPcrel,             // calls
+	RelocTypeBlindLabelUse,         // direct use of a label with blinding
     RelocTypeLabelUse,              // direct use of a label
     RelocTypeLabel,                 // points to label instr
     RelocTypeAlignedLabel,          // points to loop-top label instr that needs alignment

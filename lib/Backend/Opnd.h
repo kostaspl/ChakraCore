@@ -116,7 +116,9 @@ protected:
         m_isValueTypeFixed(false),
         canStoreTemp(false),
         isDiagHelperCallOpnd(false),
-        isPropertySymOpnd(false)
+        isPropertySymOpnd(false),
+		m_isInjected(false),
+		m_postOptEnc(false)
     {
 #if DBG
         isFakeDst = false;
@@ -129,7 +131,9 @@ protected:
         m_isDead(false),
         m_inUse(false),
         m_isValueTypeFixed(false),
-        canStoreTemp(oldOpnd.canStoreTemp)
+        canStoreTemp(oldOpnd.canStoreTemp),
+		m_isInjected(false),
+		m_postOptEnc(false)
     {
 #if DBG
         isFakeDst = false;
@@ -231,6 +235,9 @@ public:
 	void				SetIsInjected(bool val) { this->m_isInjected = val; }
 	bool				IsInjected() const { return this->m_isInjected; }
 
+	void				SetPostOptEnc(bool val) { this->m_postOptEnc = val; }
+	bool				PostOptEnc() const { return this->m_postOptEnc; }
+
     static IntConstOpnd *CreateUint32Opnd(const uint i, Func *const func);
     static IntConstOpnd *CreateProfileIdOpnd(const Js::ProfileId profileId, Func *const func);
     static IntConstOpnd *CreateInlineCacheIndexOpnd(const Js::InlineCacheIndex inlineCacheIndex, Func *const func);
@@ -280,9 +287,9 @@ public:
 #if DBG
     bool                isFakeDst:1;
 #endif
-	bool				m_isInjected = false;
+	bool				m_isInjected:1;
+	bool				m_postOptEnc:1;
     OpndKind            m_kind;
-
 };
 
 ///---------------------------------------------------------------------------

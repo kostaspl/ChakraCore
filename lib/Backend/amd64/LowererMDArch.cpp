@@ -2809,6 +2809,7 @@ LowererMDArch::FinalLower()
             instr->m_opcode = Js::OpCode::MOV;
             intOpnd = IR::IntConstOpnd::New(this->m_func->GetArgsSize(), TyUint32, this->m_func);
             instr->SetSrc1(intOpnd);
+			intOpnd->SetPostOptEnc(true);
             LowererMD::Legalize(instr);
             break;
 
@@ -2817,6 +2818,7 @@ LowererMDArch::FinalLower()
             instr->m_opcode = Js::OpCode::MOV;
             intOpnd = IR::IntConstOpnd::New(this->m_func->GetSpillSize(), TyUint32, this->m_func);
             instr->SetSrc1(intOpnd);
+			intOpnd->SetPostOptEnc(true);
             LowererMD::Legalize(instr);
             break;
 

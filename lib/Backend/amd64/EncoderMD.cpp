@@ -507,7 +507,7 @@ intConst:
 
     case IR::OpndKindLabel:
         value = (size_t)opnd->AsLabelOpnd()->GetLabel();
-        AppendRelocEntry(RelocTypeLabelUse, (void*) m_pc, nullptr);
+        AppendRelocEntry(RelocTypeBlindLabelUse, (void*) m_pc, nullptr);
         break;
 
     default:
@@ -1595,11 +1595,40 @@ EncoderMD::ApplyRelocs(size_t codeBufferAddress_)
 				break;
 			}
 
-        case RelocTypeLabelUse:
+		case RelocTypeLabelUse:
+			{
+				IR::LabelInstr *labelInstr = *(IR::LabelInstr**)relocAddress;
+				AssertMsg(labelInstr->GetPC() != nullptr, "Branch to unemitted label?");
+				*(size_t *)relocAddress = (size_t)(labelInstr->GetPC() - m_encoder->m_encodeBuffer + codeBufferAddress_);
+				break;
+			}
+
+        case RelocTypeBlindLabelUse:
             {
                 IR::LabelInstr *labelInstr = *(IR::LabelInstr**)relocAddress;
                 AssertMsg(labelInstr->GetPC() != nullptr, "Branch to unemitted label?");
-                *(size_t *)relocAddress = (size_t)(labelInstr->GetPC() - m_encoder->m_encodeBuffer + codeBufferAddress_);
+				size_t cookie = (size_t)Math::Rand();
+				
+				/*
+				int i = 0;
+				while (*((size_t *)((BYTE *)relocAddress - i)) != 0xDEADBEEFDEADBEEF) {
+					i++;
+				}
+				printf("1 GOT IT %d\n", i++);
+				while (*((size_t *)((BYTE *)relocAddress - i)) != 0xDEADBEEFDEADBEEF) {
+					i++;
+				}
+				printf("2 GOT IT %d\n", i++);
+				*/
+
+				size_t blindVal = ((size_t)(labelInstr->GetPC() - m_encoder->m_encodeBuffer + codeBufferAddress_)) ^ cookie;
+				AssertMsg(*((size_t *)((BYTE *)relocAddress - 30)) == 0xDEADBEEFDEADBEEF, "Incorrect Blind Reloc");
+				AssertMsg(*((size_t *)((BYTE *)relocAddress - 18)) == 0xDEADBEEFDEADBEEF, "Incorrect Blind Reloc");
+				*(size_t *)((BYTE *)relocAddress - 30) = blindVal;
+				*(size_t *)((BYTE *)relocAddress - 18) = cookie;
+				*(size_t *)relocAddress = 0x9090909090909090;		// NOP out initial MOV
+				*((BYTE *)relocAddress - 1) = 0x90;
+				*((BYTE *)relocAddress - 2) = 0x90;
                 break;
             }
         case RelocTypeLabel:
