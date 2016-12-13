@@ -5,6 +5,24 @@
 #include "Runtime.h"
 #include "TestHooks.h"
 
+HRESULT __stdcall SetConstantBlinding(bool enabled) {
+	if (!enabled) printf("Constant blinding is OFF\n");
+	Js::Configuration::Global.flags.ConstantBlinding = enabled;
+	return S_OK;
+}
+
+HRESULT __stdcall SetImplicitConstantBlinding(bool enabled) {
+	if (!enabled) printf("Implicit constant blinding is OFF\n");
+	Js::Configuration::Global.flags.ImplicitConstantBlinding = enabled;
+	return S_OK;
+}
+
+HRESULT __stdcall SetForceReserveR15(bool enabled) {
+	if (enabled) printf("R15 is reserved\n");
+	Js::Configuration::Global.flags.ForceReserveR15 = enabled;
+	return S_OK;
+}
+
 #ifdef ENABLE_TEST_HOOKS
 
 HRESULT __stdcall SetConfigFlags(__in int argc, __in_ecount(argc) LPWSTR argv[], ICustomConfigFlags* customConfigFlags)
@@ -160,3 +178,21 @@ HRESULT OnChakraCoreLoaded()
 }
 
 #endif // ENABLE_TEST_HOOKS
+
+HRESULT OnChakraCoreLoaded2() {
+	typedef HRESULT(__stdcall *OnChakraCoreLoaded2Ptr)(ReleaseFlags &testHooks);
+	OnChakraCoreLoaded2Ptr pfChakraCoreLoaded = (OnChakraCoreLoaded2Ptr)GetProcAddress(GetModuleHandle(NULL), "OnChakraCoreLoaded2Entry");
+	if (pfChakraCoreLoaded == nullptr)
+	{
+		return S_OK;
+	}
+
+	ReleaseFlags rlsFlags =
+	{
+		SetConstantBlinding,
+		SetImplicitConstantBlinding,
+		SetForceReserveR15
+	};
+
+	return pfChakraCoreLoaded(rlsFlags);
+}

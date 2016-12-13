@@ -8,7 +8,7 @@ void
 Security::EncodeLargeConstants()
 {
 #pragma prefast(suppress:6236 6285, "logical-or of constants is by design")
-    if (PHASE_OFF(Js::EncodeConstantsPhase, this->func) || CONFIG_ISENABLED(Js::DebugFlag) || !MD_ENCODE_LG_CONSTS)
+    if (!Js::Configuration::Global.flags.ConstantBlinding || PHASE_OFF(Js::EncodeConstantsPhase, this->func) || CONFIG_ISENABLED(Js::DebugFlag) || !MD_ENCODE_LG_CONSTS)
     {
         return;
     }
@@ -195,6 +195,36 @@ Security::InsertSmallNOP(IR::Instr * instr, DWORD nopSize)
 #endif
 }
 
+/*
+bool
+Security::DontEncode(IR::Opnd *opnd)
+{
+	switch (opnd->GetKind())
+	{
+	case IR::OpndKindIntConst:
+	{
+		IR::IntConstOpnd *intConstOpnd = opnd->AsIntConstOpnd();
+		return intConstOpnd->m_dontEncode;
+	}
+
+	case IR::OpndKindAddr:
+	{
+		IR::AddrOpnd *addrOpnd = opnd->AsAddrOpnd();
+		return (addrOpnd->m_dontEncode ||
+			!addrOpnd->IsVar() ||
+			addrOpnd->m_address == nullptr ||
+			!Js::TaggedNumber::Is(addrOpnd->m_address));
+	}
+
+	case IR::OpndKindHelperCall:
+		// Never encode helper call addresses, as these are always internal constants.
+		return true;
+	}
+
+	return false;
+}
+*/
+
 bool
 Security::DontEncode(IR::Opnd *opnd)
 {
@@ -271,6 +301,13 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
     {
         IR::IntConstOpnd *intConstOpnd = opnd->AsIntConstOpnd();
 
+		/*
+		if (!this->IsLargeConstant(intConstOpnd->AsInt32()))
+		{
+			return;
+		}
+		*/
+
 		if (instr->m_opcode == Js::OpCode::SHL ||
 			instr->m_opcode == Js::OpCode::SHR ||
 			instr->m_opcode == Js::OpCode::SAR ||
@@ -300,6 +337,13 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
     case IR::OpndKindAddr:
     {
         IR::AddrOpnd *addrOpnd = opnd->AsAddrOpnd();
+
+		/*
+		if (Js::TaggedInt::Is(addrOpnd->m_address) && !this->IsLargeConstant(Js::TaggedInt::ToInt32(addrOpnd->m_address)))
+		{
+			return;
+		}
+		*/
 
         if (opnd != instr->GetSrc1())
         {
@@ -357,7 +401,7 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
 			IR::Instr   *movInstr = IR::Instr::New(Js::OpCode::MOV, regOpnd, IR::AddrOpnd::New((void *)((size_t)IR::GetMethodAddress(opnd->AsHelperCallOpnd()) ^ cookie), IR::AddrOpndKindConstant, instr->m_func), instr->m_func);
 			instr->InsertBefore(movInstr);
 
-			
+
 			IR::AddrOpnd *cookieOpnd = IR::AddrOpnd::New((Js::Var)cookie, IR::AddrOpndKindConstant, instr->m_func);
 			instrNew = IR::Instr::New(Js::OpCode::XOR, regOpnd, regOpnd, cookieOpnd, instr->m_func);
 			instr->InsertBefore(instrNew);
@@ -378,6 +422,12 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
     case IR::OpndKindIndir:
 	{
 		IR::IndirOpnd *indirOpnd = opnd->AsIndirOpnd();
+		
+		/*
+		if (!this->IsLargeConstant(indirOpnd->GetOffset()) || indirOpnd->m_dontEncode) {
+			return;
+		}
+		*/
 
 		AssertMsg(indirOpnd->GetIndexOpnd() == nullptr, "Code currently doesn't support indir with offset and indexOpnd");
 

@@ -115,6 +115,7 @@ private:
     static bool m_usageStringPrinted;
     static ArgInfo m_argInfo;
     static TestHooks m_testHooks;
+	static ReleaseFlags m_releaseFlags;
     static JsAPIHooks m_jsApiHooks;
 
 private:
@@ -122,6 +123,7 @@ private:
 
 public:
     static HRESULT OnChakraCoreLoaded(TestHooks& testHooks);
+	static HRESULT OnChakraCoreLoaded2(ReleaseFlags& rlsFlags);
 
     static HINSTANCE LoadChakraDll(ArgInfo& argInfo);
     static void UnloadChakraDll(HINSTANCE library);
@@ -130,6 +132,9 @@ public:
     static HRESULT SetConfigFlags(__in int argc, __in_ecount(argc) LPWSTR argv[], ICustomConfigFlags* customConfigFlags) { return CHECKED_CALL(SetConfigFlags, argc, argv, customConfigFlags); }
     static HRESULT GetFileNameFlag(BSTR * filename) { return CHECKED_CALL(GetFilenameFlag, filename); }
     static HRESULT PrintConfigFlagsUsageString() { m_usageStringPrinted = true;  return CHECKED_CALL(PrintConfigFlagsUsageString); }
+	static HRESULT SetConstantBlinding(bool enabled) { return m_releaseFlags.pfSetConstantBlinding(enabled); }
+	static HRESULT SetImplicitConstantBlinding(bool enabled) { return m_releaseFlags.pfSetImplicitConstantBlinding(enabled); }
+	static HRESULT SetForceReserveR15(bool enabled) { return m_releaseFlags.pfSetForceReserveR15(enabled); }
 
 #ifdef CHECK_MEMORY_LEAK
     static bool IsEnabledCheckMemoryFlag() { return CHECKED_CALL_RETURN(IsEnabledCheckMemoryLeakFlag, FALSE); }

@@ -41,6 +41,12 @@
         kernel32.lib;
       Pathcch.lib;</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_nocb.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_noicb.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_nocb_noicb.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_nocb_noicb_r15.exe"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ResourceCompile Include="$(MsBuildThisFileDirectory)ch.rc">

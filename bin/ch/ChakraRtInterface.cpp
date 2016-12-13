@@ -12,6 +12,7 @@ bool ChakraRTInterface::m_usageStringPrinted = false;
 
 ChakraRTInterface::ArgInfo ChakraRTInterface::m_argInfo = { 0 };
 TestHooks ChakraRTInterface::m_testHooks = { 0 };
+ReleaseFlags ChakraRTInterface::m_releaseFlags = { 0 };
 JsAPIHooks ChakraRTInterface::m_jsApiHooks = { 0 };
 
 /*static*/
@@ -152,4 +153,11 @@ HRESULT ChakraRTInterface::OnChakraCoreLoaded(TestHooks& testHooks)
     }
 
     return S_OK;
+}
+
+/*static*/
+HRESULT ChakraRTInterface::OnChakraCoreLoaded2(ReleaseFlags& rlsFlags)
+{
+	m_releaseFlags = rlsFlags;
+	return S_OK;
 }

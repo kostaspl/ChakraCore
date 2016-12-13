@@ -4,6 +4,18 @@
 //-------------------------------------------------------------------------------------------------------
 #pragma once
 
+HRESULT OnChakraCoreLoaded2();
+
+struct ReleaseFlags {
+	typedef HRESULT(__stdcall *SetConstantBlindingPtr)(bool enabled);
+	typedef HRESULT(__stdcall *SetImplicitConstantBlindingPtr)(bool enabled);
+	typedef HRESULT(__stdcall *SetForceReserveR15Ptr)(bool enabled);
+
+	SetConstantBlindingPtr pfSetConstantBlinding;
+	SetImplicitConstantBlindingPtr pfSetImplicitConstantBlinding;
+	SetForceReserveR15Ptr pfSetForceReserveR15;
+};
+
 #ifdef ENABLE_TEST_HOOKS
 
 HRESULT OnChakraCoreLoaded();

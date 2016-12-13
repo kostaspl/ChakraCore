@@ -507,7 +507,12 @@ intConst:
 
     case IR::OpndKindLabel:
         value = (size_t)opnd->AsLabelOpnd()->GetLabel();
-        AppendRelocEntry(RelocTypeBlindLabelUse, (void*) m_pc, nullptr);
+		if (Js::Configuration::Global.flags.ImplicitConstantBlinding) {
+			AppendRelocEntry(RelocTypeBlindLabelUse, (void*)m_pc, nullptr);
+		}
+		else {
+			AppendRelocEntry(RelocTypeLabelUse, (void*)m_pc, nullptr);
+		}
         break;
 
     default:
@@ -848,7 +853,6 @@ EncoderMD::Encode(IR::Instr *instr, BYTE *pc, BYTE* beginCodeAddress)
 		case MODRM:
 		modrm:
 			if (instr->m_opcode == Js::OpCode::JMP && instr->IsInjected()) {
-				//puts("Got injected JMP!");
 				IR::LabelInstr *target = instr->AsBranchInstr()->GetInjectedLabel();
 				AppendRelocEntry(RelocTypeBlindBranch, (void*)((BYTE *)m_pc - 2), target);
 			}
@@ -1622,11 +1626,14 @@ EncoderMD::ApplyRelocs(size_t codeBufferAddress_)
 				*/
 
 				size_t blindVal = ((size_t)(labelInstr->GetPC() - m_encoder->m_encodeBuffer + codeBufferAddress_)) ^ cookie;
+
 				AssertMsg(*((size_t *)((BYTE *)relocAddress - 30)) == 0xDEADBEEFDEADBEEF, "Incorrect Blind Reloc");
-				AssertMsg(*((size_t *)((BYTE *)relocAddress - 18)) == 0xDEADBEEFDEADBEEF, "Incorrect Blind Reloc");
 				*(size_t *)((BYTE *)relocAddress - 30) = blindVal;
+				AssertMsg(*((size_t *)((BYTE *)relocAddress - 18)) == 0xDEADBEEFDEADBEEF, "Incorrect Blind Reloc");
 				*(size_t *)((BYTE *)relocAddress - 18) = cookie;
-				*(size_t *)relocAddress = 0x9090909090909090;		// NOP out initial MOV
+
+				// NOP out initial MOV
+				*(size_t *)relocAddress = 0x9090909090909090;
 				*((BYTE *)relocAddress - 1) = 0x90;
 				*((BYTE *)relocAddress - 2) = 0x90;
                 break;

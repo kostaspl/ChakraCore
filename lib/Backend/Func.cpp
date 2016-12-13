@@ -507,175 +507,176 @@ Func::Codegen()
         lowerer.FinalLower();
         END_CODEGEN_PHASE(this, Js::FinalLowerPhase);
 
-		FOREACH_REAL_INSTR_IN_FUNC_EDITING(instr, instrNext, this)
-		{
-			IR::Opnd *src1 = instr->GetSrc1();
-			IR::Opnd *src2 = instr->GetSrc2();
-			IR::Opnd *dst = instr->GetDst();
-			
-			if ((src1 && src1->PostOptEnc()) || (src2 && src2->PostOptEnc()) || (dst && dst->PostOptEnc())) {
-				IR::Opnd *targetOpnd = NULL;
-				bool isSrc2 = false;
+		if (Js::Configuration::Global.flags.ImplicitConstantBlinding){
+			FOREACH_REAL_INSTR_IN_FUNC_EDITING(instr, instrNext, this)
+			{
+				IR::Opnd *src1 = instr->GetSrc1();
+				IR::Opnd *src2 = instr->GetSrc2();
+				IR::Opnd *dst = instr->GetDst();
 
-				/*
-				if (instr->m_opcode == Js::OpCode::SHL ||
-					instr->m_opcode == Js::OpCode::SHR ||
-					instr->m_opcode == Js::OpCode::SAR ||
-					instr->m_opcode == Js::OpCode::RET ||
-					instr->m_opcode == Js::OpCode::NOP)
-					continue;
-					*/
-				if (src1 && src1->PostOptEnc()) {
-					targetOpnd = src1;
-				}
-				else if (src2 && src2->PostOptEnc()) {
-					targetOpnd = src2;
-					isSrc2 = true;
-				}
+				if ((src1 && src1->PostOptEnc()) || (src2 && src2->PostOptEnc()) || (dst && dst->PostOptEnc())) {
+					IR::Opnd *targetOpnd = NULL;
+					bool isSrc2 = false;
 
-				if (targetOpnd) {
-					IR::RegOpnd *regOpnd = IR::RegOpnd::New(nullptr, RegR15, targetOpnd->GetType(), instr->m_func);
+					if (instr->m_opcode == Js::OpCode::SHL ||
+						instr->m_opcode == Js::OpCode::SHR ||
+						instr->m_opcode == Js::OpCode::SAR ||
+						instr->m_opcode == Js::OpCode::RET ||
+						instr->m_opcode == Js::OpCode::NOP)
+						continue;
 
-					int32 cookie = (int32)Math::Rand();
-					int32 constValue = (int32)targetOpnd->AsIntConstOpnd()->GetValue();
-
-					IR::IntConstOpnd *blindOpnd = IR::IntConstOpnd::New(constValue ^ cookie, TyInt32, this);
-					IR::Instr * instrNew = LowererMD::CreateAssign(regOpnd, blindOpnd, instr);
-					IR::IntConstOpnd * cookieOpnd = IR::IntConstOpnd::New(cookie, TyInt32, instr->m_func);
-
-					instrNew = IR::Instr::New(Js::OpCode::XOR, regOpnd, regOpnd, cookieOpnd, instr->m_func);
-					instr->InsertBefore(instrNew);
-
-					if (!isSrc2) {
-						instr->UnlinkSrc1();
-						instr->SetSrc1(regOpnd);
+					if (src1 && src1->PostOptEnc()) {
+						targetOpnd = src1;
 					}
-					else {
-						instr->UnlinkSrc2();
-						instr->SetSrc2(regOpnd);
+					else if (src2 && src2->PostOptEnc()) {
+						targetOpnd = src2;
+						isSrc2 = true;
 					}
-					
+
+					if (targetOpnd) {
+						IR::RegOpnd *regOpnd = IR::RegOpnd::New(nullptr, RegR15, targetOpnd->GetType(), instr->m_func);
+
+						int32 cookie = (int32)Math::Rand();
+						int32 constValue = (int32)targetOpnd->AsIntConstOpnd()->GetValue();
+
+						IR::IntConstOpnd *blindOpnd = IR::IntConstOpnd::New(constValue ^ cookie, TyInt32, this);
+						IR::Instr * instrNew = LowererMD::CreateAssign(regOpnd, blindOpnd, instr);
+						IR::IntConstOpnd * cookieOpnd = IR::IntConstOpnd::New(cookie, TyInt32, instr->m_func);
+
+						instrNew = IR::Instr::New(Js::OpCode::XOR, regOpnd, regOpnd, cookieOpnd, instr->m_func);
+						instr->InsertBefore(instrNew);
+
+						if (!isSrc2) {
+							instr->UnlinkSrc1();
+							instr->SetSrc1(regOpnd);
+						}
+						else {
+							instr->UnlinkSrc2();
+							instr->SetSrc2(regOpnd);
+						}
+
+					}
 				}
-			}
-		} NEXT_REAL_INSTR_IN_FUNC_EDITING;
+			} NEXT_REAL_INSTR_IN_FUNC_EDITING;
 
-		FOREACH_REAL_INSTR_IN_FUNC_EDITING(instr, instrNext, this)
-		{
-			if (instr->IsBranchInstr()) {
-				IR::BranchInstr *brInstr = instr->AsBranchInstr();
-				if (brInstr->IsConditional() && brInstr->m_opcode != Js::OpCode::TryCatch && brInstr->m_opcode != Js::OpCode::TryFinally
-					&& brInstr->m_opcode != Js::OpCode::TryFinallyWithYield) {
-					//
-					// Find the following:
-					//	   Jcc  $label
-					// and convert it to:
-					//     Jncc $new_label			(Jncc = J(NOT cc))
-					//	   LEA  %r15, [%rip + 0xOFFSET_TO_$LABEL &  cookie]
-					//     LEA  %r15, [%r15 + 0xOFFSET_TO_$LABEL & ~cookie]
-					//     JMP  %r15
-					//   new_label:
-					//
-					// Keep in mind - this block actually converts:
-					//     Jcc  $label
-					// to:
-					//     Jncc $new_label
-					//     JMP  $label
-					//   new_label:
-					// which is then converted to use LEA by the code following this block
-					//
-					IR::LabelInstr *label = brInstr->GetTarget();
-					if (!label) continue;
+			FOREACH_REAL_INSTR_IN_FUNC_EDITING(instr, instrNext, this)
+			{
+				if (instr->IsBranchInstr()) {
+					IR::BranchInstr *brInstr = instr->AsBranchInstr();
+					if (brInstr->IsConditional() && brInstr->m_opcode != Js::OpCode::TryCatch && brInstr->m_opcode != Js::OpCode::TryFinally
+						&& brInstr->m_opcode != Js::OpCode::TryFinallyWithYield) {
+						//
+						// Find the following:
+						//	   Jcc  $label
+						// and convert it to:
+						//     Jncc $new_label			(Jncc = J(NOT cc) - e.g. JEQ -> JNE)
+						//	   LEA  %r15, [%rip + 0xOFFSET_TO_$LABEL &  cookie]
+						//     LEA  %r15, [%r15 + 0xOFFSET_TO_$LABEL & ~cookie]
+						//     JMP  %r15
+						//   new_label:
+						//
+						// Keep in mind - this block actually converts:
+						//     Jcc  $label
+						// to:
+						//     Jncc $new_label
+						//     JMP  $label
+						//   new_label:
+						// which is then converted to use LEA by code following this block
+						//
+						IR::LabelInstr *label = brInstr->GetTarget();
+						if (!label) continue;
 
-					LowererMD::InvertBranch(brInstr);
+						LowererMD::InvertBranch(brInstr);
 
-					IR::LabelInstr *newLabel = IR::LabelInstr::New(Js::OpCode::Label, instr->m_func);
-					IR::BranchInstr *newJmp = IR::BranchInstr::New(Js::OpCode::JMP, label, instr->m_func);
+						IR::LabelInstr *newLabel = IR::LabelInstr::New(Js::OpCode::Label, instr->m_func);
+						IR::BranchInstr *newJmp = IR::BranchInstr::New(Js::OpCode::JMP, label, instr->m_func);
 
-					brInstr->InsertAfter(newLabel);
-					brInstr->SetTarget(newLabel);
-					brInstr->InsertAfter(newJmp);
+						brInstr->InsertAfter(newLabel);
+						brInstr->SetTarget(newLabel);
+						brInstr->InsertAfter(newJmp);
+					}
 				}
-			}
-			else if (instr->m_opcode == Js::OpCode::MOV) {
-				if (instr->GetSrc1()->IsLabelOpnd()) {
-					//
-					// Find the following:
-					//	   MOV  %reg, $label
-					// and convert it to:
-					//     MOV  %r15, 0xOFFSET_TO_$LABEL ^ cookie
-					//     PUSH %r14
-					//     MOV  %r14, cookie (as XOR does not take 64-bit immediates)
-					//     XOR  %r15, %r15, %r14
-					//     POP  %r14
-					//     MOV  %reg, %r15
-					//
-					//  Note - we keep the initial MOV instruction for the reloc entry, it will be NOP'd out by the encoder
-					//
-					IR::RegOpnd *regOpnd = IR::RegOpnd::New(nullptr, RegR15, TyMachPtr, instr->m_func);
-					IR::RegOpnd *r14Opnd = IR::RegOpnd::New(nullptr, RegR14, TyMachReg, instr->m_func);
-					
-					IR::Instr *movInstr = IR::Instr::New(Js::OpCode::MOV, regOpnd, IR::AddrOpnd::New((Js::Var)0xDEADBEEFDEADBEEF, IR::AddrOpndKindConstant, instr->m_func), instr->m_func);
-					instr->InsertBefore(movInstr);
+				else if (instr->m_opcode == Js::OpCode::MOV) {
+					if (instr->GetSrc1()->IsLabelOpnd()) {
+						//
+						// Find the following:
+						//	   MOV  %reg, $label
+						// and convert it to:
+						//     MOV  %r15, 0xOFFSET_TO_$LABEL ^ cookie
+						//     PUSH %r14
+						//     MOV  %r14, cookie (as XOR does not take 64-bit immediates)
+						//     XOR  %r15, %r15, %r14
+						//     POP  %r14
+						//     MOV  %reg, %r15
+						//
+						//  Note - we keep the initial MOV instruction for the reloc entry, it will be NOP'd out by the encoder
+						//
+						IR::RegOpnd *regOpnd = IR::RegOpnd::New(nullptr, RegR15, TyMachPtr, instr->m_func);
+						IR::RegOpnd *r14Opnd = IR::RegOpnd::New(nullptr, RegR14, TyMachReg, instr->m_func);
 
-					IR::Instr *pushInstr = IR::Instr::New(Js::OpCode::PUSH, instr->m_func);
-					pushInstr->SetSrc1(r14Opnd);
-					instr->InsertBefore(pushInstr);
+						IR::Instr *movInstr = IR::Instr::New(Js::OpCode::MOV, regOpnd, IR::AddrOpnd::New((Js::Var)0xDEADBEEFDEADBEEF, IR::AddrOpndKindConstant, instr->m_func), instr->m_func);
+						instr->InsertBefore(movInstr);
 
-					IR::AddrOpnd *cookieOpnd = IR::AddrOpnd::New((Js::Var)0xDEADBEEFDEADBEEF, IR::AddrOpndKindConstant, instr->m_func);
-					IR::Instr *xorInstr = IR::Instr::New(Js::OpCode::XOR, regOpnd, regOpnd, cookieOpnd, instr->m_func);
-					instr->InsertBefore(xorInstr);
-					LowererMD::Legalize(xorInstr);
+						IR::Instr *pushInstr = IR::Instr::New(Js::OpCode::PUSH, instr->m_func);
+						pushInstr->SetSrc1(r14Opnd);
+						instr->InsertBefore(pushInstr);
 
-					xorInstr->GetSrc2()->AsRegOpnd()->SetReg(RegR14);
-					xorInstr->m_prev->GetDst()->AsRegOpnd()->SetReg(RegR14);
+						IR::AddrOpnd *cookieOpnd = IR::AddrOpnd::New((Js::Var)0xDEADBEEFDEADBEEF, IR::AddrOpndKindConstant, instr->m_func);
+						IR::Instr *xorInstr = IR::Instr::New(Js::OpCode::XOR, regOpnd, regOpnd, cookieOpnd, instr->m_func);
+						instr->InsertBefore(xorInstr);
+						LowererMD::Legalize(xorInstr);
 
-					IR::Instr *popInstr = IR::Instr::New(Js::OpCode::POP, r14Opnd, instr->m_func);
-					instr->InsertBefore(popInstr);
+						xorInstr->GetSrc2()->AsRegOpnd()->SetReg(RegR14);
+						xorInstr->m_prev->GetDst()->AsRegOpnd()->SetReg(RegR14);
 
-					IR::Instr *mov2Instr = IR::Instr::New(Js::OpCode::MOV, instr->GetDst(), regOpnd, instr->m_func);
-					instr->InsertBefore(mov2Instr);
+						IR::Instr *popInstr = IR::Instr::New(Js::OpCode::POP, r14Opnd, instr->m_func);
+						instr->InsertBefore(popInstr);
+
+						IR::Instr *mov2Instr = IR::Instr::New(Js::OpCode::MOV, instr->GetDst(), regOpnd, instr->m_func);
+						instr->InsertBefore(mov2Instr);
+					}
 				}
-			}
-		} NEXT_REAL_INSTR_IN_FUNC_EDITING;
+			} NEXT_REAL_INSTR_IN_FUNC_EDITING;
 
-		FOREACH_REAL_INSTR_IN_FUNC_EDITING(instr, instrNext, this)
-		{
-			if (instr->IsBranchInstr()) {
-				IR::BranchInstr *brInstr = instr->AsBranchInstr();
-				if (brInstr->IsUnconditional()) {
-					//
-					// Find the following:
-					//	 JMP $label
-					// and convert it to:
-					//	 LEA %r15, [%rip + 0xOFFSET_TO_$LABEL &  cookie]
-					//   LEA %r15, [%r15 + 0xOFFSET_TO_$LABEL & ~cookie]
-					//   JMP %r15
-					//
-					IR::LabelInstr *label = brInstr->GetTarget();
-					if (!label) continue;
+			FOREACH_REAL_INSTR_IN_FUNC_EDITING(instr, instrNext, this)
+			{
+				if (instr->IsBranchInstr()) {
+					IR::BranchInstr *brInstr = instr->AsBranchInstr();
+					if (brInstr->IsUnconditional()) {
+						//
+						// Find the following:
+						//	 JMP $label
+						// and convert it to:
+						//	 LEA %r15, [%rip + 0xOFFSET_TO_$LABEL &  cookie]
+						//   LEA %r15, [%r15 + 0xOFFSET_TO_$LABEL & ~cookie]
+						//   JMP %r15
+						//
+						IR::LabelInstr *label = brInstr->GetTarget();
+						if (!label) continue;
 
-					IR::RegOpnd *regOpnd = IR::RegOpnd::New(nullptr, RegR15, TyMachPtr, instr->m_func);
-					IR::RegOpnd *raxOpnd = IR::RegOpnd::New(nullptr, RegRAX, TyMachPtr, instr->m_func);
-					IR::IndirOpnd *indirOpnd = IR::IndirOpnd::New(raxOpnd, 0xDEADBEEF, TyMachPtr, instr->m_func);
-					indirOpnd->SetIsInjected(true);
-					IR::Instr *leaInstr = Lowerer::InsertLea(regOpnd, indirOpnd, instr);
-					leaInstr->SetIsInjected(true);
-					//instr->InsertBefore(leaInstr);
+						IR::RegOpnd *regOpnd = IR::RegOpnd::New(nullptr, RegR15, TyMachPtr, instr->m_func);
+						IR::RegOpnd *raxOpnd = IR::RegOpnd::New(nullptr, RegRAX, TyMachPtr, instr->m_func);
+						IR::IndirOpnd *indirOpnd = IR::IndirOpnd::New(raxOpnd, 0xDEADBEEF, TyMachPtr, instr->m_func);
+						indirOpnd->SetIsInjected(true);
+						IR::Instr *leaInstr = Lowerer::InsertLea(regOpnd, indirOpnd, instr);
+						leaInstr->SetIsInjected(true);
+						//instr->InsertBefore(leaInstr);
 
-					IR::IndirOpnd *indir2Opnd = IR::IndirOpnd::New(regOpnd, 0xDEADBEEF, TyMachPtr, instr->m_func);
-					indir2Opnd->SetIsInjected(true);
-					IR::Instr *lea2Instr = Lowerer::InsertLea(regOpnd, indir2Opnd, instr);
-					lea2Instr->SetIsInjected(true);
+						IR::IndirOpnd *indir2Opnd = IR::IndirOpnd::New(regOpnd, 0xDEADBEEF, TyMachPtr, instr->m_func);
+						indir2Opnd->SetIsInjected(true);
+						IR::Instr *lea2Instr = Lowerer::InsertLea(regOpnd, indir2Opnd, instr);
+						lea2Instr->SetIsInjected(true);
 
-					IR::MultiBranchInstr *newJmp = IR::MultiBranchInstr::New(Js::OpCode::JMP, regOpnd, instr->m_func);
-					newJmp->SetIsInjected(true);
-					newJmp->SetInjectedLabel(label);
-					instr->InsertBefore(newJmp);
+						IR::MultiBranchInstr *newJmp = IR::MultiBranchInstr::New(Js::OpCode::JMP, regOpnd, instr->m_func);
+						newJmp->SetIsInjected(true);
+						newJmp->SetInjectedLabel(label);
+						instr->InsertBefore(newJmp);
 
-					instr->Remove();
+						instr->Remove();
+					}
 				}
-			}
-		} NEXT_REAL_INSTR_IN_FUNC_EDITING;
+			} NEXT_REAL_INSTR_IN_FUNC_EDITING;
+		}
 
         // Encoder
         BEGIN_CODEGEN_PHASE(this, Js::EncoderPhase);

@@ -862,7 +862,7 @@ LowererMDArch::LowerCall(IR::Instr * callInstr, uint32 argCount)
 
     if (callInstr->GetSrc1()->IsHelperCallOpnd() && !callInstr->HasBailOutInfo())
     {
-		if (Security::DontEncode(callInstr->GetSrc1())) {
+		if (!Js::Configuration::Global.flags.ConstantBlinding || Security::DontEncode(callInstr->GetSrc1())) {
 			IR::RegOpnd *targetOpnd = IR::RegOpnd::New(StackSym::New(TyMachPtr, m_func), RegRAX, TyMachPtr, this->m_func);
 			IR::Instr   *movInstr = IR::Instr::New(Js::OpCode::MOV, targetOpnd, callInstr->GetSrc1(), this->m_func);
 			targetOpnd->m_isCallArg = true;

@@ -38,6 +38,11 @@ static BOOL AttachProcess(HANDLE hmod)
     }
 #endif
 
+	if (FAILED(OnChakraCoreLoaded2()))
+	{
+		return FALSE;
+	}
+
     {
         CmdLineArgsParser parser;
 

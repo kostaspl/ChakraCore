@@ -17,6 +17,11 @@ HRESULT __stdcall OnChakraCoreLoadedEntry(TestHooks& testHooks)
     return ChakraRTInterface::OnChakraCoreLoaded(testHooks);
 }
 
+HRESULT __stdcall OnChakraCoreLoaded2Entry(ReleaseFlags& rlsFlags)
+{
+	return ChakraRTInterface::OnChakraCoreLoaded2(rlsFlags);
+}
+
 JsRuntimeAttributes jsrtAttributes = JsRuntimeAttributeAllowScriptInterrupt;
 LPCWSTR JsErrorCodeToString(JsErrorCode jsErrorCode)
 {
@@ -522,6 +527,16 @@ int _cdecl wmain(int argc, __in_ecount(argc) LPWSTR argv[])
 
     ChakraRTInterface::ArgInfo argInfo = { argc, argv, PrintUsage, &fileName.m_str };
     HINSTANCE chakraLibrary = ChakraRTInterface::LoadChakraDll(argInfo);
+
+	if (wcsstr(argv[0], L"nocb") != NULL) {
+		ChakraRTInterface::SetConstantBlinding(false);
+	}
+	if (wcsstr(argv[0], L"noicb") != NULL) {
+		ChakraRTInterface::SetImplicitConstantBlinding(false);
+	}
+	if (wcsstr(argv[0], L"r15") != NULL) {
+		ChakraRTInterface::SetForceReserveR15(true);
+	}
 
     if (fileName.m_str == nullptr) {
         fileName = CComBSTR(argv[1]);

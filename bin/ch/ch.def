@@ -2,3 +2,4 @@ NAME CH
 
 EXPORTS
     OnChakraCoreLoadedEntry
+    OnChakraCoreLoaded2Entry
