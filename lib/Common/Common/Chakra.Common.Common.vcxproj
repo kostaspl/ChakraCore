@@ -38,6 +38,9 @@
     <ARMASM>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/D_CONTROL_FLOW_GUARD %(AdditionalOptions)</AdditionalOptions>
     </ARMASM>
+    <ARMASM>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/D_CONTROL_FLOW_GUARD %(AdditionalOptions)</AdditionalOptions>
+    </ARMASM>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Api.cpp" />
