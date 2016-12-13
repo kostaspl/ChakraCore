@@ -39,6 +39,9 @@
       <PrecompiledHeaderFile>BackEnd.h</PrecompiledHeaderFile>
       <ControlFlowGuard Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Guard</ControlFlowGuard>
     </ClCompile>
+    <MASM>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/D_CONTROL_FLOW_GUARD %(AdditionalOptions)</AdditionalOptions>
+    </MASM>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(OptimizedBuild)'!='true'">
     <ClCompile>

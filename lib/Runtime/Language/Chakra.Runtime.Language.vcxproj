@@ -42,6 +42,9 @@
     <MASM>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/D_CONTROL_FLOW_GUARD %(AdditionalOptions)</AdditionalOptions>
     </MASM>
+    <MASM>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/D_CONTROL_FLOW_GUARD %(AdditionalOptions)</AdditionalOptions>
+    </MASM>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)i386\StackFrame.cpp">
