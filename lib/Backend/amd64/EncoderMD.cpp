@@ -1583,21 +1583,51 @@ EncoderMD::ApplyRelocs(size_t codeBufferAddress_)
             }
 
 		case RelocTypeBlindBranch:
-			{
-				// The address of the target LabelInstr is saved at the reloc address.
-				IR::LabelInstr * labelInstr = reloc->getBrTargetLabel();
-				AssertMsg(labelInstr->GetPC() != nullptr, "Branch to unemitted label?");
-				
-				uint32 cookie = (uint32)Math::Rand();
+		{
+			// The address of the target LabelInstr is saved at the reloc address.
+			IR::LabelInstr * labelInstr = reloc->getBrTargetLabel();
+			AssertMsg(labelInstr->GetPC() != nullptr, "Branch to unemitted label?");
 
-				pcrel = (uint32)(labelInstr->GetPC() - ((BYTE*)reloc->m_ptr)) + 7;
+			uint32 cookie = (uint32)Math::Rand();
+
+			pcrel = (uint32)(labelInstr->GetPC() - ((BYTE*)reloc->m_ptr)) + 7;
+
+			bool applyICB = true;
+
+			if (applyICB) {
 				*((BYTE *)relocAddress - 12) -= 0x7B;	// change LEA base reg from RAX to RIP
+
 				AssertMsg(*((uint32 *)((BYTE *)relocAddress - 7) - 1) == 0xDEADBEEF, "Incorrect Blind Reloc");
 				*((uint32 *)((BYTE *)relocAddress - 7) - 1) = pcrel & cookie;
 				AssertMsg(*((uint32 *)relocAddress - 1) == 0xDEADBEEF, "Incorrect Blind Reloc");
 				*((uint32 *)relocAddress - 1) = pcrel & ~cookie;
-				break;
 			}
+
+			BYTE *ptrToJMP = (relocAddress - 19);
+			BYTE *ptrToJCC = (relocAddress - 20);
+			bool jmpCase = (*ptrToJMP == 0xE9);
+
+			if (applyICB){
+				if (jmpCase) {
+					// 5 byte NOP { 0x0F, 0x1F, 0x44, 0x00, 0x00 }
+					*((uint32 *)ptrToJMP) = 0x00441F0F;
+					*(ptrToJMP + 4) = 0x00;
+				}
+				else {
+					*((uint32 *)(ptrToJCC + 2)) = 0x11;
+				}
+			}
+			else {
+				if (!jmpCase) {
+					*(uint64 *)(ptrToJCC + 6) = 0x0000000000841F0F;
+					*(uint64 *)(ptrToJCC + 14) = 0x00000000841F0F66;
+					*(ptrToJCC + 22) = 0x00;
+					*(ptrToJCC + 1) ^= 0x01;
+				}
+			}
+
+			break;
+		}
 
 		case RelocTypeLabelUse:
 			{

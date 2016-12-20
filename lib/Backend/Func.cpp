@@ -585,15 +585,21 @@ Func::Codegen()
 						//
 						IR::LabelInstr *label = brInstr->GetTarget();
 						if (!label) continue;
+						//if (label->isOpHelper) continue;
 
-						LowererMD::InvertBranch(brInstr);
+						IR::BranchInstr *brInstr2 = (IR::BranchInstr *) IR::BranchInstr::New(brInstr->m_opcode, label, this);
+						LowererMD::InvertBranch(brInstr2);
 
-						IR::LabelInstr *newLabel = IR::LabelInstr::New(Js::OpCode::Label, instr->m_func);
+						brInstr->InsertAfter(brInstr2);
+
+						//IR::LabelInstr *newLabel = IR::LabelInstr::New(Js::OpCode::Label, instr->m_func);
 						IR::BranchInstr *newJmp = IR::BranchInstr::New(Js::OpCode::JMP, label, instr->m_func);
 
-						brInstr->InsertAfter(newLabel);
-						brInstr->SetTarget(newLabel);
-						brInstr->InsertAfter(newJmp);
+						//brInstr2->InsertAfter(newLabel);
+						//brInstr2->SetTarget(newLabel);
+						brInstr2->SetIsInjected(true);
+						brInstr2->InsertAfter(newJmp);
+						brInstr->Remove();
 					}
 				}
 				else if (instr->m_opcode == Js::OpCode::MOV) {
@@ -653,26 +659,31 @@ Func::Codegen()
 						//
 						IR::LabelInstr *label = brInstr->GetTarget();
 						if (!label) continue;
+						//if (label->isOpHelper) continue;
 
 						IR::RegOpnd *regOpnd = IR::RegOpnd::New(nullptr, RegR15, TyMachPtr, instr->m_func);
 						IR::RegOpnd *raxOpnd = IR::RegOpnd::New(nullptr, RegRAX, TyMachPtr, instr->m_func);
 						IR::IndirOpnd *indirOpnd = IR::IndirOpnd::New(raxOpnd, 0xDEADBEEF, TyMachPtr, instr->m_func);
 						indirOpnd->SetIsInjected(true);
-						IR::Instr *leaInstr = Lowerer::InsertLea(regOpnd, indirOpnd, instr);
+						IR::Instr *leaInstr = IR::Instr::New(Js::OpCode::LEA, regOpnd, indirOpnd, this);
 						leaInstr->SetIsInjected(true);
-						//instr->InsertBefore(leaInstr);
 
 						IR::IndirOpnd *indir2Opnd = IR::IndirOpnd::New(regOpnd, 0xDEADBEEF, TyMachPtr, instr->m_func);
 						indir2Opnd->SetIsInjected(true);
-						IR::Instr *lea2Instr = Lowerer::InsertLea(regOpnd, indir2Opnd, instr);
+						IR::Instr *lea2Instr = IR::Instr::New(Js::OpCode::LEA, regOpnd, indir2Opnd, this);
 						lea2Instr->SetIsInjected(true);
 
 						IR::MultiBranchInstr *newJmp = IR::MultiBranchInstr::New(Js::OpCode::JMP, regOpnd, instr->m_func);
 						newJmp->SetIsInjected(true);
 						newJmp->SetInjectedLabel(label);
-						instr->InsertBefore(newJmp);
 
-						instr->Remove();
+						brInstr->InsertAfter(newJmp);
+						brInstr->InsertAfter(lea2Instr);
+						brInstr->InsertAfter(leaInstr);
+
+						if (brInstr->m_prev != NULL && brInstr->m_prev->IsBranchInstr() && brInstr->m_prev->AsBranchInstr()->IsConditional() && brInstr->m_prev->AsBranchInstr()->IsInjected()) {
+							brInstr->Remove();
+						}
 					}
 				}
 			} NEXT_REAL_INSTR_IN_FUNC_EDITING;
