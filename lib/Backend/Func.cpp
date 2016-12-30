@@ -566,22 +566,28 @@ Func::Codegen()
 					if (brInstr->IsConditional() && brInstr->m_opcode != Js::OpCode::TryCatch && brInstr->m_opcode != Js::OpCode::TryFinally
 						&& brInstr->m_opcode != Js::OpCode::TryFinallyWithYield) {
 						//
+						// CONDITIONAL JUMPS
+						//
 						// Find the following:
 						//	   Jcc  $label
 						// and convert it to:
-						//     Jncc $new_label			(Jncc = J(NOT cc) - e.g. JEQ -> JNE)
+						//     Jncc $label			(Jncc = J(NOT cc) - e.g. JEQ -> JNE)
 						//	   LEA  %r15, [%rip + 0xOFFSET_TO_$LABEL &  cookie]
 						//     LEA  %r15, [%r15 + 0xOFFSET_TO_$LABEL & ~cookie]
 						//     JMP  %r15
-						//   new_label:
 						//
 						// Keep in mind - this block actually converts:
 						//     Jcc  $label
 						// to:
-						//     Jncc $new_label
+						//     Jncc $label
 						//     JMP  $label
-						//   new_label:
-						// which is then converted to use LEA by code following this block
+						// which is then converted to use LEA by code following this block.
+						//
+						// The encoder works in the following way:
+						//		If the jump offset is large enough to apply ICB:
+						//			Jncc $label becomes Jncc 0x11 (to jump over the LEAs/JMP)
+						//		When the jump offset is not large enough and ICB is not applied:
+						//			Jncc $label is reverted to Jcc $label and LEAs/JMP are NOP'd out.
 						//
 						IR::LabelInstr *label = brInstr->GetTarget();
 						if (!label) continue;
@@ -604,6 +610,8 @@ Func::Codegen()
 				}
 				else if (instr->m_opcode == Js::OpCode::MOV) {
 					if (instr->GetSrc1()->IsLabelOpnd()) {
+						//
+						// TRY/CATCH
 						//
 						// Find the following:
 						//	   MOV  %reg, $label
@@ -650,12 +658,21 @@ Func::Codegen()
 					IR::BranchInstr *brInstr = instr->AsBranchInstr();
 					if (brInstr->IsUnconditional()) {
 						//
+						// UNCONDITIONAL JUMPS
+						//
 						// Find the following:
 						//	 JMP $label
 						// and convert it to:
+						//   JMP $label
 						//	 LEA %r15, [%rip + 0xOFFSET_TO_$LABEL &  cookie]
 						//   LEA %r15, [%r15 + 0xOFFSET_TO_$LABEL & ~cookie]
 						//   JMP %r15
+						//
+						// The encoder works in the following way:
+						//		If the jump offset is large enough to apply ICB:
+						//			JMP $label is NOP'd out, LEAs/JMP path is used
+						//		When the jump offset is not large enough and ICB is not applied:
+						//			Nothing happens, JMP $label will be executed and LEAs/JMP will be skipped
 						//
 						IR::LabelInstr *label = brInstr->GetTarget();
 						if (!label) continue;

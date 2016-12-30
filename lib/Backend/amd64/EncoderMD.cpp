@@ -1604,25 +1604,56 @@ EncoderMD::ApplyRelocs(size_t codeBufferAddress_)
 
 			BYTE *ptrToJMP = (relocAddress - 19);
 			BYTE *ptrToJCC = (relocAddress - 20);
+
+			// Check whether we're handling a Jcc or a JMP
 			bool jmpCase = (*ptrToJMP == 0xE9);
 
 			if (applyICB){
+				//
+				// UNCONDITIONAL JUMPS
+				//		If the jump offset is large enough to apply ICB:
+				//			NOP out the original JMP, keep the one that use LEAs
+				//
 				if (jmpCase) {
-					// 5 byte NOP { 0x0F, 0x1F, 0x44, 0x00, 0x00 }
+					// 5 byte NOP
+					// 0F 1F 44 00 00
 					*((uint32 *)ptrToJMP) = 0x00441F0F;
 					*(ptrToJMP + 4) = 0x00;
 				}
+				//
+				// CONDITIONAL JUMPS
+				//		If the jump offset is large enough to apply ICB:
+				//			Jncc $label becomes Jncc 0x11 (jumps over the LEAs/JMP)
+				//
 				else {
+					// Jncc $label => Jncc 0x11
 					*((uint32 *)(ptrToJCC + 2)) = 0x11;
 				}
 			}
 			else {
+				//
+				// CONDITIONAL JUMPS
+				//		When the jump offset is not large enough and ICB is not applied:
+				//			Jncc $label is reverted to Jcc $label and LEAs/JMP are NOP'd out.
+				//
 				if (!jmpCase) {
+					// 8 byte NOP
+					// 0F 1F 84 00 00 00 00 00
 					*(uint64 *)(ptrToJCC + 6) = 0x0000000000841F0F;
+					
+					// 9 byte NOP
+					// 66 0F 1F 84 00 00 00 00 00
 					*(uint64 *)(ptrToJCC + 14) = 0x00000000841F0F66;
 					*(ptrToJCC + 22) = 0x00;
+					
+					// Jncc => Jcc
 					*(ptrToJCC + 1) ^= 0x01;
 				}
+				//
+				// UNCONDITIONAL JUMPS
+				//		No need to handle this. JMP is always performed so there's no need to NOP out
+				//		the injected LEAs/JMP.
+				//
 			}
 
 			break;
