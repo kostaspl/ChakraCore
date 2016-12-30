@@ -862,40 +862,13 @@ LowererMDArch::LowerCall(IR::Instr * callInstr, uint32 argCount)
 
     if (callInstr->GetSrc1()->IsHelperCallOpnd() && !callInstr->HasBailOutInfo())
     {
-		if (!Js::Configuration::Global.flags.ConstantBlinding || Security::DontEncode(callInstr->GetSrc1())) {
-			IR::RegOpnd *targetOpnd = IR::RegOpnd::New(StackSym::New(TyMachPtr, m_func), RegRAX, TyMachPtr, this->m_func);
-			IR::Instr   *movInstr = IR::Instr::New(Js::OpCode::MOV, targetOpnd, callInstr->GetSrc1(), this->m_func);
-			targetOpnd->m_isCallArg = true;
+		IR::RegOpnd *targetOpnd = IR::RegOpnd::New(StackSym::New(TyMachPtr, m_func), RegRAX, TyMachPtr, this->m_func);
+		IR::Instr   *movInstr = IR::Instr::New(Js::OpCode::MOV, targetOpnd, callInstr->GetSrc1(), this->m_func);
+		targetOpnd->m_isCallArg = true;
 
-			callInstr->UnlinkSrc1();
-			callInstr->SetSrc1(targetOpnd);
-			callInstr->InsertBefore(movInstr);
-		} else {
-			size_t cookie = (size_t)Math::Rand();
-
-			IR::RegOpnd *targetOpnd = IR::RegOpnd::New(StackSym::New(TyMachPtr, m_func), RegRAX, TyMachPtr, this->m_func);
-			IR::Instr   *movInstr = IR::Instr::New(Js::OpCode::MOV, targetOpnd,
-				IR::AddrOpnd::New((void *)((size_t)IR::GetMethodAddress(callInstr->GetSrc1()->AsHelperCallOpnd()) ^ cookie), IR::AddrOpndKindConstant, this->m_func),
-				this->m_func);
-			targetOpnd->m_isCallArg = true;
-
-			IR::Instr * xorInstr;
-			IR::AddrOpnd *cookieOpnd = IR::AddrOpnd::New((Js::Var)cookie, IR::AddrOpndKindConstant, this->m_func);
-			xorInstr = IR::Instr::New(Js::OpCode::XOR, targetOpnd, targetOpnd, cookieOpnd, this->m_func);
-
-			StackSym * stackSym = targetOpnd->m_sym;
-			Assert(!stackSym->m_isSingleDef);
-			Assert(stackSym->m_instrDef == nullptr);
-			stackSym->m_isEncodedConstant = true;
-			stackSym->constantValue = (size_t)IR::GetMethodAddress(callInstr->GetSrc1()->AsHelperCallOpnd());
-
-			callInstr->UnlinkSrc1();
-			callInstr->SetSrc1(targetOpnd);
-			callInstr->InsertBefore(movInstr);
-			callInstr->InsertBefore(xorInstr);
-
-			LowererMD::Legalize(xorInstr);
-		}
+		callInstr->UnlinkSrc1();
+		callInstr->SetSrc1(targetOpnd);
+		callInstr->InsertBefore(movInstr);
     }
 
     //

@@ -23,6 +23,18 @@ HRESULT __stdcall SetForceReserveR15(bool enabled) {
 	return S_OK;
 }
 
+HRESULT __stdcall SetCBMethod(int val) {
+	if (val > 0) printf("Constant Blinding Method: %d\n", val);
+	Js::Configuration::Global.cbMethod = val;
+	return S_OK;
+}
+
+HRESULT __stdcall SetNOPInsertion(bool enabled) {
+	if (enabled) printf("NOP Insertion is enabled\n");
+	Js::Configuration::Global.flags.InsertNOPs = enabled;
+	return S_OK;
+}
+
 #ifdef ENABLE_TEST_HOOKS
 
 HRESULT __stdcall SetConfigFlags(__in int argc, __in_ecount(argc) LPWSTR argv[], ICustomConfigFlags* customConfigFlags)
@@ -191,7 +203,9 @@ HRESULT OnChakraCoreLoaded2() {
 	{
 		SetConstantBlinding,
 		SetImplicitConstantBlinding,
-		SetForceReserveR15
+		SetForceReserveR15,
+		SetCBMethod,
+		SetNOPInsertion
 	};
 
 	return pfChakraCoreLoaded(rlsFlags);

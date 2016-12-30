@@ -10,10 +10,14 @@ struct ReleaseFlags {
 	typedef HRESULT(__stdcall *SetConstantBlindingPtr)(bool enabled);
 	typedef HRESULT(__stdcall *SetImplicitConstantBlindingPtr)(bool enabled);
 	typedef HRESULT(__stdcall *SetForceReserveR15Ptr)(bool enabled);
+	typedef HRESULT(__stdcall *SetCBMethodPtr)(int val);
+	typedef HRESULT(__stdcall *SetNOPInsertionPtr)(bool enabled);
 
 	SetConstantBlindingPtr pfSetConstantBlinding;
 	SetImplicitConstantBlindingPtr pfSetImplicitConstantBlinding;
 	SetForceReserveR15Ptr pfSetForceReserveR15;
+	SetCBMethodPtr pfSetCBMethod;
+	SetNOPInsertionPtr pfSetNOPInsertion;
 };
 
 #ifdef ENABLE_TEST_HOOKS

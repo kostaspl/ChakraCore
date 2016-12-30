@@ -1340,6 +1340,7 @@ FLAGNR(Boolean, CFG, "Force enable CFG on jshost. version in the jshost's manife
 FLAGR(Boolean, ConstantBlinding, "Enable Constant Blinding", true)
 FLAGR(Boolean, ImplicitConstantBlinding, "Enable Implicit Constant Blinding", true)
 FLAGR(Boolean, ForceReserveR15, "Force reserve R15 register", false)
+FLAGR(Boolean, InsertNOPs, "Random NOP insertion", false)
 
 #if DBG
     FLAGNR(Number, SimulatePolyCacheWithOneTypeForInlineCacheIndex, "Use with SimulatePolyCacheWithOneTypeForFunction to simulate creating a polymorphic inline cache containing only one type due to a collision, for testing ObjTypeSpec", -1)

@@ -2889,7 +2889,7 @@ Opnd::Dump(IRDumpFlags flags, Func *func)
 
     case OpndKindHelperCall:
         helperMethod = this->AsHelperCallOpnd()->m_fnHelper;
-        Output::Print(_u("%s"), IR::GetMethodName(helperMethod));
+        Output::Print(_u("%s [%p]"), IR::GetMethodName(helperMethod), this->GetImmediateValue());
         break;
 
     case OpndKindFloatConst:

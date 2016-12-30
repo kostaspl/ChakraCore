@@ -498,6 +498,7 @@ namespace Js
     class Configuration
     {
     public:
+		int cbMethod = 0;
         ConfigFlagsTable           flags;
         static Configuration        Global;
         bool EnableJitInDebugMode();

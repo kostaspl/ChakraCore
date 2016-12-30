@@ -537,6 +537,18 @@ int _cdecl wmain(int argc, __in_ecount(argc) LPWSTR argv[])
 	if (wcsstr(argv[0], L"r15") != NULL) {
 		ChakraRTInterface::SetForceReserveR15(true);
 	}
+	if (wcsstr(argv[0], L"cb4") != NULL) {
+		ChakraRTInterface::SetCBMethod(4);
+	}
+	if (wcsstr(argv[0], L"cb8") != NULL) {
+		ChakraRTInterface::SetCBMethod(8);
+	}
+	if (wcsstr(argv[0], L"cb16") != NULL) {
+		ChakraRTInterface::SetCBMethod(16);
+	}
+	if (wcsstr(argv[0], L"nops") != NULL) {
+		ChakraRTInterface::SetNOPInsertion(true);
+	}
 
     if (fileName.m_str == nullptr) {
         fileName = CComBSTR(argv[1]);

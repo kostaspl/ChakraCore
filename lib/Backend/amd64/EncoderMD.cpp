@@ -1587,14 +1587,13 @@ EncoderMD::ApplyRelocs(size_t codeBufferAddress_)
 			// The address of the target LabelInstr is saved at the reloc address.
 			IR::LabelInstr * labelInstr = reloc->getBrTargetLabel();
 			AssertMsg(labelInstr->GetPC() != nullptr, "Branch to unemitted label?");
-
-			uint32 cookie = (uint32)Math::Rand();
-
 			pcrel = (uint32)(labelInstr->GetPC() - ((BYTE*)reloc->m_ptr)) + 7;
 
-			bool applyICB = true;
+			bool applyICB = Security::IsLargeConstant(pcrel);
 
 			if (applyICB) {
+				uint32 cookie = (uint32)Math::Rand();
+
 				*((BYTE *)relocAddress - 12) -= 0x7B;	// change LEA base reg from RAX to RIP
 
 				AssertMsg(*((uint32 *)((BYTE *)relocAddress - 7) - 1) == 0xDEADBEEF, "Incorrect Blind Reloc");
@@ -1663,9 +1662,9 @@ EncoderMD::ApplyRelocs(size_t codeBufferAddress_)
 				*(size_t *)((BYTE *)relocAddress - 18) = cookie;
 
 				// NOP out initial MOV
-				*(size_t *)relocAddress = 0x9090909090909090;
+				*(size_t *)relocAddress = 0x0000000000841F0F;
 				*((BYTE *)relocAddress - 1) = 0x90;
-				*((BYTE *)relocAddress - 2) = 0x90;
+				*((BYTE *)relocAddress - 2) = 0x66;
                 break;
             }
         case RelocTypeLabel:

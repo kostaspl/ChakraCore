@@ -666,7 +666,7 @@ sub parse_args
             $testDescription = "octane 2.0 benchmark";
             $parse_time = 0;
             $parse_scores = 1;
-            $parse_latency = 1;
+            $parse_latency = 0;
             $dir = "octane";
             $basefile = "perfbase$dir.txt";
             $is_dynamicProfileRun = 0; # Currently octane dyna-pogo info is not avialable in the browser - remove this when it is.

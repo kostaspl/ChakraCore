@@ -135,6 +135,8 @@ public:
 	static HRESULT SetConstantBlinding(bool enabled) { return m_releaseFlags.pfSetConstantBlinding(enabled); }
 	static HRESULT SetImplicitConstantBlinding(bool enabled) { return m_releaseFlags.pfSetImplicitConstantBlinding(enabled); }
 	static HRESULT SetForceReserveR15(bool enabled) { return m_releaseFlags.pfSetForceReserveR15(enabled); }
+	static HRESULT SetCBMethod(int cbMethod) { return m_releaseFlags.pfSetCBMethod(cbMethod); }
+	static HRESULT SetNOPInsertion(bool enabled) { return m_releaseFlags.pfSetNOPInsertion(enabled); }
 
 #ifdef CHECK_MEMORY_LEAK
     static bool IsEnabledCheckMemoryFlag() { return CHECKED_CALL_RETURN(IsEnabledCheckMemoryLeakFlag, FALSE); }

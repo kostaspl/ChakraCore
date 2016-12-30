@@ -48,7 +48,7 @@ Security::GetNextNOPInsertPoint()
 void
 Security::InsertRandomFunctionPad(IR::Instr * instrBeforeInstr)
 {
-    if (PHASE_OFF(Js::InsertNOPsPhase, instrBeforeInstr->m_func->GetTopFunc())
+    if (!Js::Configuration::Global.flags.InsertNOPs || PHASE_OFF(Js::InsertNOPsPhase, instrBeforeInstr->m_func->GetTopFunc())
         || CONFIG_ISENABLED(Js::DebugFlag) || CONFIG_ISENABLED(Js::BenchmarkFlag))
     {
         return;
@@ -83,7 +83,7 @@ Security::InsertRandomFunctionPad(IR::Instr * instrBeforeInstr)
 void
 Security::InsertNOPs()
 {
-    if (PHASE_OFF(Js::InsertNOPsPhase, this->func) || CONFIG_ISENABLED(Js::DebugFlag) || CONFIG_ISENABLED(Js::BenchmarkFlag))
+    if (!Js::Configuration::Global.flags.InsertNOPs || PHASE_OFF(Js::InsertNOPsPhase, this->func) || CONFIG_ISENABLED(Js::DebugFlag) || CONFIG_ISENABLED(Js::BenchmarkFlag))
     {
         return;
     }
@@ -264,6 +264,8 @@ Security::DontEncode(IR::Opnd *opnd)
 			//opnd->SetPostOptEnc(true);
 			return true;
 		}
+
+		return false;
     }
 
     case IR::OpndKindHelperCall:
@@ -301,12 +303,10 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
     {
         IR::IntConstOpnd *intConstOpnd = opnd->AsIntConstOpnd();
 
-		/*
 		if (!this->IsLargeConstant(intConstOpnd->AsInt32()))
 		{
 			return;
 		}
-		*/
 
 		if (instr->m_opcode == Js::OpCode::SHL ||
 			instr->m_opcode == Js::OpCode::SHR ||
@@ -338,12 +338,10 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
     {
         IR::AddrOpnd *addrOpnd = opnd->AsAddrOpnd();
 
-		/*
 		if (Js::TaggedInt::Is(addrOpnd->m_address) && !this->IsLargeConstant(Js::TaggedInt::ToInt32(addrOpnd->m_address)))
 		{
 			return;
 		}
-		*/
 
         if (opnd != instr->GetSrc1())
         {
@@ -362,60 +360,7 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
 
 	case IR::OpndKindHelperCall:
 	{
-		if (instr->m_opcode == Js::OpCode::MOV) {
-			instr->UnlinkSrc1();
-
-			IR::Instr   *instrNew = nullptr;
-			//IR::RegOpnd *regOpnd = instr->GetDst()->AsRegOpnd();
-			IR::RegOpnd *targetOpnd = IR::RegOpnd::New(StackSym::New(TyMachPtr, instr->m_func), TyMachPtr, instr->m_func);
-			size_t cookie = (size_t)Math::Rand();
-
-			instr->ReplaceDst(targetOpnd);
-
-			instr->SetSrc1(IR::AddrOpnd::New((void *)((size_t)IR::GetMethodAddress(opnd->AsHelperCallOpnd()) ^ cookie), IR::AddrOpndKindConstant, instr->m_func));
-
-			IR::AddrOpnd *cookieOpnd = IR::AddrOpnd::New((Js::Var)cookie, IR::AddrOpndKindConstant, instr->m_func);
-			instrNew = IR::Instr::New(Js::OpCode::XOR, targetOpnd, targetOpnd, cookieOpnd, instr->m_func);
-			instr->InsertAfter(instrNew);
-			LowererMD::Legalize(instrNew);
-
-			StackSym * stackSym = targetOpnd->m_sym;
-			Assert(!stackSym->m_isSingleDef);
-			Assert(stackSym->m_instrDef == nullptr);
-			stackSym->m_isEncodedConstant = true;
-			stackSym->constantValue = (size_t)IR::GetMethodAddress(opnd->AsHelperCallOpnd());
-
-			instrNew->GetNextRealInstr()->ReplaceSrc1(targetOpnd);
-			return;
-		}
-		else if (instr->m_opcode == Js::OpCode::CALL) {
-			instr->UnlinkSrc1();
-
-			IR::Instr   *instrNew = nullptr;
-			IR::RegOpnd *regOpnd = IR::RegOpnd::New(TyMachReg, instr->m_func);
-			regOpnd->SetReg(RegRAX);
-			regOpnd->m_isCallArg = true;
-
-			size_t cookie = (size_t)Math::Rand();
-
-			IR::Instr   *movInstr = IR::Instr::New(Js::OpCode::MOV, regOpnd, IR::AddrOpnd::New((void *)((size_t)IR::GetMethodAddress(opnd->AsHelperCallOpnd()) ^ cookie), IR::AddrOpndKindConstant, instr->m_func), instr->m_func);
-			instr->InsertBefore(movInstr);
-
-
-			IR::AddrOpnd *cookieOpnd = IR::AddrOpnd::New((Js::Var)cookie, IR::AddrOpndKindConstant, instr->m_func);
-			instrNew = IR::Instr::New(Js::OpCode::XOR, regOpnd, regOpnd, cookieOpnd, instr->m_func);
-			instr->InsertBefore(instrNew);
-			LowererMD::Legalize(instrNew);
-
-			StackSym * stackSym = regOpnd->m_sym;
-			Assert(!stackSym->m_isSingleDef);
-			Assert(stackSym->m_instrDef == nullptr);
-			stackSym->m_isEncodedConstant = true;
-			stackSym->constantValue = (size_t)IR::GetMethodAddress(opnd->AsHelperCallOpnd());
-
-			instr->SetSrc1(regOpnd);
-			return;
-		}
+		return;
 	}
 	break;
 
@@ -423,11 +368,9 @@ Security::EncodeOpnd(IR::Instr *instr, IR::Opnd *opnd)
 	{
 		IR::IndirOpnd *indirOpnd = opnd->AsIndirOpnd();
 		
-		/*
-		if (!this->IsLargeConstant(indirOpnd->GetOffset()) || indirOpnd->m_dontEncode) {
+		if (!this->IsLargeConstant(indirOpnd->GetOffset())) {
 			return;
 		}
-		*/
 
 		AssertMsg(indirOpnd->GetIndexOpnd() == nullptr, "Code currently doesn't support indir with offset and indexOpnd");
 

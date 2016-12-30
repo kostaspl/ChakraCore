@@ -42,10 +42,32 @@
       Pathcch.lib;</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_nocb.exe"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_cb4.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_cb8.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_cb16.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_nocb.exe"
 copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_noicb.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_noicb_cb4.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_noicb_cb8.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_noicb_cb16.exe"
 copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_nocb_noicb.exe"
-copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_nocb_noicb_r15.exe"</Command>
+copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_nocb_noicb_nops.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_nocb_noicb_r15.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_release\ch.exe" "$(SolutionDir)VcBuild\bin\x64_release\ch_nops.exe"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy "$(SolutionDir)VcBuild\bin\x64_debug\ch.exe" "$(SolutionDir)VcBuild\bin\x64_debug\ch_cb4.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_debug\ch.exe" "$(SolutionDir)VcBuild\bin\x64_debug\ch_cb8.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_debug\ch.exe" "$(SolutionDir)VcBuild\bin\x64_debug\ch_cb16.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_debug\ch.exe" "$(SolutionDir)VcBuild\bin\x64_debug\ch_nocb.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_debug\ch.exe" "$(SolutionDir)VcBuild\bin\x64_debug\ch_noicb.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_debug\ch.exe" "$(SolutionDir)VcBuild\bin\x64_debug\ch_noicb_cb4.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_debug\ch.exe" "$(SolutionDir)VcBuild\bin\x64_debug\ch_noicb_cb8.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_debug\ch.exe" "$(SolutionDir)VcBuild\bin\x64_debug\ch_noicb_cb16.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_debug\ch.exe" "$(SolutionDir)VcBuild\bin\x64_debug\ch_nocb_noicb.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_debug\ch.exe" "$(SolutionDir)VcBuild\bin\x64_debug\ch_nocb_noicb_nops.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_debug\ch.exe" "$(SolutionDir)VcBuild\bin\x64_debug\ch_nocb_noicb_r15.exe"
+copy "$(SolutionDir)VcBuild\bin\x64_debug\ch.exe" "$(SolutionDir)VcBuild\bin\x64_debug\ch_nops.exe"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
